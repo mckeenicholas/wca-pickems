@@ -1,6 +1,6 @@
 services:
-  db:
-    image: postgres
+  pickems-db:
+    image: postgres:17.4-alpine
     restart: always
     ports:
       - 5433:5432
@@ -8,5 +8,14 @@ services:
       - pickems.env
     volumes:
       - pgdata:/var/lib/postgresql/data
+
+  pickems:
+    container_name: pickems
+    build:
+      context: .
+      dockerfile: Dockerfile
+    expose:
+      - "80"
+
 volumes:
   pgdata:

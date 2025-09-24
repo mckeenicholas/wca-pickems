@@ -1,0 +1,1 @@
+ALTER TABLE "competitions" ADD COLUMN "allowEdits" boolean DEFAULT true NOT NULL;

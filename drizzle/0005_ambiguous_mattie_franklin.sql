@@ -1,0 +1,1 @@
+ALTER TABLE "predictions" ALTER COLUMN "score" SET DATA TYPE real;

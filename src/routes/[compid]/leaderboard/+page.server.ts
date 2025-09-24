@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db';
 import { Competition, Prediction, Registration, Users } from '$lib/server/db/schema';
-import { fail, redirect } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { desc, and, eq, sum, count, countDistinct, sql } from 'drizzle-orm';
 import { WCAEvents, type WCAEvent } from '$lib/types';
@@ -9,10 +9,6 @@ const PAGINATION_SIZE = 25;
 
 export const load: PageServerLoad = async (event) => {
 	const userId = event.locals.user?.id;
-
-	if (!userId) {
-		return redirect(302, '/login');
-	}
 
 	const eventId = event.url.searchParams.get('event');
 	const pageStr = event.url.searchParams.get('page') ?? '0';
@@ -104,15 +100,22 @@ export const load: PageServerLoad = async (event) => {
 		.groupBy(Users.id)
 		.as('ranked_results');
 
-	// Get user stats (might not exist if user hasn't made predictions)
-	const userStatsQuery = await db
-		.select({ rank: rankedQuery.rank, userScore: rankedQuery.score })
-		.from(rankedQuery)
-		.where(eq(rankedQuery.userId, userId));
+	// Conditionally get user stats only if logged in
+	let userRank = null;
+	let userScore = null;
+	let userPercentile = null;
 
-	const userStats = userStatsQuery[0];
-	const rank = userStats ? parseInt(userStats.rank) : null;
-	const userPercentile = rank && totalUsers > 0 ? ((totalUsers - rank + 1) / totalUsers) * 100 : null;
+	if (userId) {
+		const userStatsQuery = await db
+			.select({ rank: rankedQuery.rank, userScore: rankedQuery.score })
+			.from(rankedQuery)
+			.where(eq(rankedQuery.userId, userId));
+
+		const userStats = userStatsQuery[0];
+		userRank = userStats ? parseInt(userStats.rank) : null;
+		userScore = userStats?.userScore ?? null;
+		userPercentile = userRank && totalUsers > 0 ? ((totalUsers - userRank + 1) / totalUsers) * 100 : null;
+	}
 
 	// Get leaderboard results
 	const leaderboardResults = await db
@@ -132,8 +135,8 @@ export const load: PageServerLoad = async (event) => {
 		totalUsers,
 		currentPage: page,
 		compName: competitionName,
-		userRank: rank,
-		userScore: userStats?.userScore ?? null,
+		userRank,
+		userScore,
 		userPercentile,
 		noPredictions: false
 	};

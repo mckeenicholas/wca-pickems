@@ -1,18 +1,13 @@
 <script lang="ts">
+	import { formatDate } from '$lib/util';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
-
-	const formatDate = (dateString: string) => {
-		const date = new Date(dateString);
-		date.setHours(date.getHours() + 12);
-		return date.toLocaleDateString('en-US', {
-			month: 'short',
-			day: 'numeric',
-			year: 'numeric'
-		});
-	};
 </script>
+
+<svelte:head>
+    <title>WCA Pickems Dashboard</title>
+</svelte:head>
 
 <div class="min-h-screen bg-gradient-to-br">
 	<div class="mx-auto max-w-5xl px-4 py-12">
@@ -53,7 +48,7 @@
 							<!-- Action Buttons -->
 							<div class="flex flex-wrap gap-3">
 								<a
-									href="home/{competition.competitionId}"
+									href="/{competition.competitionId}"
 									class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-blue-700"
 								>
 									<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -68,7 +63,7 @@
 								</a>
 
 								<a
-									href="home/{competition.competitionId}/leaderboard"
+									href="/{competition.competitionId}/leaderboard"
 									class="inline-flex items-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors duration-200 hover:bg-slate-100"
 								>
 									<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

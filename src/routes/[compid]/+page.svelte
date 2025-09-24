@@ -9,6 +9,10 @@
 	const compId = page.params.compid;
 </script>
 
+<svelte:head>
+    <title>Pickems Dashboard for {data.competitionName}</title>
+</svelte:head>
+
 <div class="min-h-screen bg-gradient-to-br">
 	<div class="mx-auto max-w-4xl px-4 py-12">
 		<!-- Header Section -->

@@ -7,8 +7,6 @@
 
 	const { data }: PageProps = $props();
 
-	const eventId = page.params.eventid;
-
 	let competitors = $state(data.competitors ?? []);
 	let results = $state(data.results ?? []);
 	let saveStatus = $state<'idle' | 'saving' | 'success' | 'error'>('idle');
@@ -65,7 +63,9 @@
 		<!-- Header -->
 		<div class="mb-8 text-center">
 			<h1 class="mb-2 text-3xl font-bold text-slate-800">
-				Admin: Enter Results for {page.params.compid} Event: {eventNames[page.params.eventid as WCAEvent]}
+				Admin: Enter Results for {page.params.compid} Event: {eventNames[
+					page.params.eventid as WCAEvent
+				]}
 			</h1>
 		</div>
 

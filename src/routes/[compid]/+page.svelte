@@ -10,7 +10,7 @@
 </script>
 
 <svelte:head>
-    <title>Pickems Dashboard for {data.competitionName}</title>
+	<title>Pickems Dashboard for {data.competitionName}</title>
 </svelte:head>
 
 <div class="min-h-screen bg-gradient-to-br">

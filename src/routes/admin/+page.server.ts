@@ -106,8 +106,6 @@ const loadCompetitionData = async (id: string) => {
 			name: person.name
 		}));
 
-	console.log(wcifData);
-
 	if (competitorsToInsert.length > 0) {
 		await db.insert(Competitor).values(competitorsToInsert).onConflictDoNothing();
 

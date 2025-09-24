@@ -1,21 +1,31 @@
-FROM node:24-alpine AS deps
+FROM oven/bun:latest AS deps
 
 WORKDIR /app
 
-COPY package.json .
+COPY package*.json .
 
-RUN npm i
+RUN bun i --frozen-lockfile
 
-FROM node:24-alpine AS build
+FROM oven/bun:latest AS build
+
+WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# ENV ORIGIN=http://localhost:3000
-ENV ORIGIN=https://pickems.nmckee.org
 
-RUN node --env-file=pickems.env build
+RUN bun run build
 
-FROM node:24-alpine AS run
+FROM oven/bun:latest AS run
 
-CMD ["node", "build"]
+WORKDIR /app
+
+COPY --from=build /app/build build/
+COPY .env .
+
+ENV ORIGIN=http://localhost:3000
+# ENV ORIGIN=https://pickems.nmckee.org
+
+EXPOSE 3000
+
+CMD ["bun", "run", "--env-file=.env", "build"]

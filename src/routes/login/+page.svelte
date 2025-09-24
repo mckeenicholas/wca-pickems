@@ -55,25 +55,38 @@
 	<title>WCA Pickems Login</title>
 </svelte:head>
 
-<div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center py-12">
-	<div class="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-8 shadow-md transition-shadow duration-200 hover:shadow-lg text-center">
+<div
+	class="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 py-12"
+>
+	<div
+		class="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-8 text-center shadow-md transition-shadow duration-200 hover:shadow-lg"
+	>
 		<!-- Main Content -->
 		<h1 class="mb-4 text-3xl font-bold text-slate-800">Welcome</h1>
-		<p class="mb-6 text-sm text-slate-600">
-			Log in with your WCA account to get started.
-		</p>
+		<p class="mb-6 text-sm text-slate-600">Log in with your WCA account to get started.</p>
 
 		<!-- Login Button -->
 		<button
 			onclick={logIn}
-			class="inline-flex items-center justify-center rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+			class="inline-flex items-center justify-center rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
 		>
-			<svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+			<svg
+				class="mr-2 h-5 w-5"
+				fill="none"
+				stroke="currentColor"
+				viewBox="0 0 24 24"
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+				/>
 			</svg>
 			Log in with WCA
 		</button>
-		
+
 		<!-- Error Message -->
 		{#if error}
 			<div class="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-700">

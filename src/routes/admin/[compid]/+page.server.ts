@@ -23,5 +23,14 @@ export const load: PageServerLoad = async (event) => {
 		.innerJoin(Competition, eq(Registration.competitionId, Competition.id))
 		.where(eq(Competition.competitionId, compId));
 
-	return { competitionEvents };
+	const [competition] = await db
+		.select({ allowEdits: Competition.allowEdits })
+		.from(Competition)
+		.where(eq(Competition.competitionId, compId))
+		.limit(1);
+
+	return {
+		competitionEvents,
+		competition
+	};
 };

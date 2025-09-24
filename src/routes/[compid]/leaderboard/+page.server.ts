@@ -4,8 +4,7 @@ import { fail } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { desc, and, eq, sum, count, countDistinct, sql } from 'drizzle-orm';
 import { WCAEvents, type WCAEvent } from '$lib/types';
-
-const PAGINATION_SIZE = 25;
+import { PAGINATION_SIZE } from '$lib/util';
 
 export const load: PageServerLoad = async (event) => {
 	const userId = event.locals.user?.id;
@@ -114,7 +113,8 @@ export const load: PageServerLoad = async (event) => {
 		const userStats = userStatsQuery[0];
 		userRank = userStats ? parseInt(userStats.rank) : null;
 		userScore = userStats?.userScore ?? null;
-		userPercentile = userRank && totalUsers > 0 ? ((totalUsers - userRank + 1) / totalUsers) * 100 : null;
+		userPercentile =
+			userRank && totalUsers > 0 ? ((totalUsers - userRank + 1) / totalUsers) * 100 : null;
 	}
 
 	// Get leaderboard results

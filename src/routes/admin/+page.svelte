@@ -7,12 +7,16 @@
 
 <div class="min-h-screen bg-gray-50">
 	<div class="mx-auto max-w-4xl px-6 py-8">
-		<!-- Header Section -->
-		<div class="mb-8">
+		<div class="mb-8 flex items-center justify-between">
 			<h1 class="mb-2 text-3xl font-bold text-gray-900">Competition Management</h1>
+			<a
+				href="/admin/users"
+				class="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors duration-200 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+			>
+				View Users
+			</a>
 		</div>
 
-		<!-- Import Form Section -->
 		<div class="mb-8 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
 			<div class="mb-4 flex items-center">
 				<h2 class="text-xl font-semibold text-gray-900">Import New Competition</h2>
@@ -51,7 +55,6 @@
 			</form>
 		</div>
 
-		<!-- Existing Competitions Section -->
 		{#if data.availableCompetitions && data.availableCompetitions.length > 0}
 			<div class="rounded-lg border border-gray-200 bg-white shadow-sm">
 				<div class="border-b border-gray-200 px-6 py-4">
@@ -84,21 +87,19 @@
 				</div>
 
 				<div class="divide-y divide-gray-100">
-					{#each data.availableCompetitions as competition, index}
+					{#each data.availableCompetitions as competition, index (competition.id)}
 						<div class="group px-6 py-4 transition-colors duration-150 hover:bg-gray-50">
 							<a
 								href="/admin/{competition.competitionId}"
 								class="flex w-full items-center justify-between"
 							>
 								<div class="flex items-center space-x-4">
-									<!-- Competition Number -->
 									<div
 										class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-sm font-medium text-gray-600 transition-colors duration-150 group-hover:bg-blue-100 group-hover:text-blue-600"
 									>
 										{index + 1}
 									</div>
 
-									<!-- Competition Info -->
 									<div>
 										<h3
 											class="text-lg font-medium text-gray-900 transition-colors duration-150 group-hover:text-blue-600"
@@ -111,7 +112,6 @@
 									</div>
 								</div>
 
-								<!-- Arrow Icon -->
 								<div class="text-gray-400 transition-colors duration-150 group-hover:text-blue-600">
 									<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 										<path
@@ -128,7 +128,6 @@
 				</div>
 			</div>
 		{:else}
-			<!-- Empty State -->
 			<div class="rounded-lg border border-gray-200 bg-white py-12 text-center shadow-sm">
 				<div class="mb-4 text-gray-400">
 					<svg class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">

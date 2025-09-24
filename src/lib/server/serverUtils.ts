@@ -11,7 +11,11 @@ export const createServerLog = (message: string, level: 'log' | 'error' = 'log')
 	}
 };
 
-export const isAdmin = async (id: number) => {
+export const isAdmin = async (id: number | undefined) => {
+	if (id == undefined) {
+		return false;
+	}
+
 	const isAdminQuery = await db
 		.select({ isAdmin: Users.isAdmin })
 		.from(Users)

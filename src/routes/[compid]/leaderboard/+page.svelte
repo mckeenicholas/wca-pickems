@@ -1,82 +1,86 @@
 <script lang="ts">
-    import EventSelector from '$lib/components/EventSelector.svelte';
-    import type { WCAEvent } from '$lib/types';
-    import type { PageProps } from './$types';
-    import { page } from '$app/state';
-    import { goto } from '$app/navigation';
+	import EventSelector from '$lib/components/EventSelector.svelte';
+	import type { WCAEvent } from '$lib/types';
+	import type { PageProps } from './$types';
+	import { page } from '$app/state';
+	import { goto } from '$app/navigation';
 
-    const { data }: PageProps = $props();
+	const { data }: PageProps = $props();
 
-    const userIsLoggedIn = !!data.userRank;
+	const userIsLoggedIn = !!data.userRank;
 
-    let selectedEvent: WCAEvent | null = $state(page.url.searchParams.get('event') as WCAEvent || null);
+	let selectedEvent: WCAEvent | null = $state(
+		(page.url.searchParams.get('event') as WCAEvent) || null
+	);
 
-    function handleEventChange(event: WCAEvent | null) {
-        selectedEvent = event;
-        
-        const url = new URL(page.url);
-        
-        if (event) {
-            url.searchParams.set('event', event);
-        } else {
-            url.searchParams.delete('event');
-        }
-        
-        url.searchParams.delete('page');
-        
-        goto(url, { replaceState: false });
-    }
+	function handleEventChange(event: WCAEvent | null) {
+		selectedEvent = event;
 
-    function goToPage(pageNum: number) {
-        const url = new URL(page.url);
-        if (pageNum > 0) {
-            url.searchParams.set('page', pageNum.toString());
-        } else {
-            url.searchParams.delete('page');
-        }
-        goto(url, { replaceState: false });
-    }
+		const url = new URL(page.url);
 
-    function getRankingClasses(rank: number): string {
-        if (rank === 1) return 'bg-gradient-to-r from-yellow-50 to-yellow-100 border-yellow-200';
-        if (rank === 2) return 'bg-gradient-to-r from-gray-50 to-gray-100 border-gray-200';
-        if (rank === 3) return 'bg-gradient-to-r from-orange-50 to-orange-100 border-orange-200';
-        return 'bg-white border-gray-200';
-    }
+		if (event) {
+			url.searchParams.set('event', event);
+		} else {
+			url.searchParams.delete('event');
+		}
+
+		url.searchParams.delete('page');
+
+		goto(url, { replaceState: false });
+	}
+
+	function goToPage(pageNum: number) {
+		const url = new URL(page.url);
+		if (pageNum > 0) {
+			url.searchParams.set('page', pageNum.toString());
+		} else {
+			url.searchParams.delete('page');
+		}
+		goto(url, { replaceState: false });
+	}
+
+	function getRankingClasses(rank: number): string {
+		if (rank === 1) return 'bg-gradient-to-r from-yellow-50 to-yellow-100 border-yellow-200';
+		if (rank === 2) return 'bg-gradient-to-r from-gray-50 to-gray-100 border-gray-200';
+		if (rank === 3) return 'bg-gradient-to-r from-orange-50 to-orange-100 border-orange-200';
+		return 'bg-white border-gray-200';
+	}
 </script>
 
 <svelte:head>
-    <title>Pickems Leaderboard for {data.compName}</title>
+	<title>Pickems Leaderboard for {data.compName}</title>
 </svelte:head>
 
 <div class="mx-auto max-w-[75vw] space-y-6 p-4">
-    <div class="mb-8 text-center">
-        <h1 class="mb-2 text-3xl font-bold text-gray-700">Predictions Leaderboard for {data.compName}</h1>
-    </div>
+	<div class="mb-8 text-center">
+		<h1 class="mb-2 text-3xl font-bold text-gray-700">
+			Predictions Leaderboard for {data.compName}
+		</h1>
+	</div>
 
-    <EventSelector bind:event={() => selectedEvent, (event) => handleEventChange(event)} />
+	<EventSelector bind:event={() => selectedEvent, (event) => handleEventChange(event)} />
 
-    {#if userIsLoggedIn}
-        <div class="rounded-lg border border-blue-200 bg-blue-50 p-4">
-            <h3 class="mb-2 text-lg font-semibold text-blue-900">Your Performance</h3>
-            <div class="flex items-center justify-between">
-                <div>
-                    <span class="text-sm text-blue-700">Rank: </span>
-                    <span class="font-bold text-blue-900">#{data.userRank}</span>
-                </div>
-                <div>
-                    <span class="text-sm text-blue-700">Score: </span>
-                    <span class="font-bold text-blue-900">{Number(data.userScore).toFixed(2)}</span>
-                </div>
-                {#if data.userPercentile}
-                    <div>
-                        <span class="text-sm text-blue-700">Top </span>
-                        <span class="font-bold text-blue-900">{(100 - data.userPercentile).toFixed(1)}%</span>
-                    </div>
-                {/if}
-            </div>
-        </div>
-    {/if}
+	{#if userIsLoggedIn}
+		<div class="rounded-lg border border-blue-200 bg-blue-50 p-4">
+			<h3 class="mb-2 text-lg font-semibold text-blue-900">Your Performance</h3>
+			<div class="flex items-center justify-between">
+				<div>
+					<span class="text-sm text-blue-700">Rank: </span>
+					<span class="font-bold text-blue-900">#{data.userRank}</span>
+				</div>
+				<div>
+					<span class="text-sm text-blue-700">Score: </span>
+					<span class="font-bold text-blue-900">{Number(data.userScore).toFixed(2)}</span>
+				</div>
+				{#if data.userPercentile}
+					<div>
+						<span class="text-sm text-blue-700">Top </span>
+						<span class="font-bold text-blue-900">{(100 - data.userPercentile).toFixed(1)}%</span>
+					</div>
+				{/if}
+			</div>
+		</div>
+	{/if}
 
 	<!-- Leaderboard Results -->
 	{#if data.leaderboardResults && data.leaderboardResults.length > 0}
@@ -174,7 +178,9 @@
 			</div>
 			<h3 class="mb-2 text-lg font-medium text-gray-900">No Predictions Yet</h3>
 			<p class="text-gray-600">
-				No predictions have been made for this {selectedEvent ? `event (${selectedEvent})` : 'competition'} yet.
+				No predictions have been made for this {selectedEvent
+					? `event (${selectedEvent})`
+					: 'competition'} yet.
 			</p>
 		</div>
 	{:else}

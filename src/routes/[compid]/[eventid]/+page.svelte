@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 	import DragReorder from '$lib/components/DragReorder.svelte';
 	import type { PageProps } from './$types';
-	import { eventNames, WCAEvents, type WCAEvent } from '$lib/types';
+	import { eventNames, type WCAEvent } from '$lib/types';
 	import { MAX_PICKS } from '$lib/util';
 
 	const { data }: PageProps = $props();
@@ -61,7 +61,7 @@
 </script>
 
 <svelte:head>
-    <title>Enter Predictions for {eventNames[eventId as WCAEvent]}</title>
+	<title>Enter Predictions for {eventNames[eventId as WCAEvent]}</title>
 </svelte:head>
 
 <div class="min-h-screen bg-gradient-to-br pt-4">

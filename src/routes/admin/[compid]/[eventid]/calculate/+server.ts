@@ -18,34 +18,38 @@ export const POST = async (event) => {
 		return json({ error: 'No competition ID provided' }, { status: 400 });
 	}
 
-await db.transaction(async (tx) => {
-    const userPicks = tx.$with('userPicks').as(
-        tx
-            .select({ userId: Prediction.userId, numPicks: count().as('numPicks') })
-            .from(Prediction)
-            .innerJoin(Registration, eq(Prediction.registrationId, Registration.id))
-            .innerJoin(Competition, eq(Registration.competitionId, Competition.id))
-            .where(and(eq(Competition.competitionId, compId), eq(Registration.event, eventId as WCAEvent)))
-            .groupBy(Prediction.userId)
-    );
+	await db.transaction(async (tx) => {
+		const userPicks = tx.$with('userPicks').as(
+			tx
+				.select({ userId: Prediction.userId, numPicks: count().as('numPicks') })
+				.from(Prediction)
+				.innerJoin(Registration, eq(Prediction.registrationId, Registration.id))
+				.innerJoin(Competition, eq(Registration.competitionId, Competition.id))
+				.where(
+					and(eq(Competition.competitionId, compId), eq(Registration.event, eventId as WCAEvent))
+				)
+				.groupBy(Prediction.userId)
+		);
 
-    await tx
-        .with(userPicks)
-        .update(Prediction)
-        .set({ 
-            score: sql`(
+		await tx
+			.with(userPicks)
+			.update(Prediction)
+			.set({
+				score: sql`(
     (SELECT "numPicks" FROM "userPicks" WHERE "userPicks"."userId" = ${Prediction.userId}) - ${Prediction.placement} + 1
 )::float / POWER(${DECAY_FACTOR}, ABS(${Prediction.placement} - ${Result.placement}))`
-        })
-        .from(Registration)
-        .innerJoin(Competition, eq(Registration.competitionId, Competition.id))
-        .innerJoin(Result, eq(Result.registrationId, Registration.id))
-        .where(and(
-            eq(Prediction.registrationId, Registration.id), 
-            eq(Competition.competitionId, compId), 
-            eq(Registration.event, eventId as WCAEvent)
-        ));
-});
+			})
+			.from(Registration)
+			.innerJoin(Competition, eq(Registration.competitionId, Competition.id))
+			.innerJoin(Result, eq(Result.registrationId, Registration.id))
+			.where(
+				and(
+					eq(Prediction.registrationId, Registration.id),
+					eq(Competition.competitionId, compId),
+					eq(Registration.event, eventId as WCAEvent)
+				)
+			);
+	});
 
 	return json({ success: true });
 };

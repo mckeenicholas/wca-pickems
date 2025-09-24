@@ -6,7 +6,7 @@
 </script>
 
 <svelte:head>
-    <title>WCA Pickems Dashboard</title>
+	<title>WCA Pickems Dashboard</title>
 </svelte:head>
 
 <div class="min-h-screen bg-gradient-to-br">
@@ -17,7 +17,7 @@
 		<!-- Competitions List -->
 		{#if data.competitions && data.competitions.length > 0}
 			<div class="space-y-4">
-				{#each data.competitions as competition}
+				{#each data.competitions as competition (competition.id)}
 					<div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
 						<div class="p-6">
 							<!-- Competition Header -->

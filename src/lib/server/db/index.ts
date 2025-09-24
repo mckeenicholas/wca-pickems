@@ -3,8 +3,18 @@ import postgres from 'postgres';
 import * as schema from './schema';
 import { env } from '$env/dynamic/private';
 
-if (!env.DATABASE_URL) throw new Error('DATABASE_URL is not set');
+const requiredEnvVars = ['POSTGRES_USER', 'POSTGRES_PASSWORD', 'POSTGRES_DB'];
+const missingVars = requiredEnvVars.filter((varName) => !env[varName]);
 
-const client = postgres(env.DATABASE_URL);
+if (missingVars.length > 0) {
+	throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
+}
+
+const host = env.POSTGRES_HOST || 'pickems-db';
+const port = env.POSTGRES_PORT || '5432';
+
+const connectionString = `postgres://${env.POSTGRES_USER}:${env.POSTGRES_PASSWORD}@${host}:${port}/${env.POSTGRES_DB}`;
+
+const client = postgres(connectionString);
 
 export const db = drizzle(client, { schema });

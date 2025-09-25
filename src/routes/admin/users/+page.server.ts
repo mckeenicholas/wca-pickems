@@ -16,9 +16,13 @@ export const load: PageServerLoad = async (event) => {
 
 	const offsetAmount = pageNum * PAGINATION_SIZE;
 
-	const allUsers = await db.select().from(Users).limit(PAGINATION_SIZE).offset(offsetAmount);
+	const [allUsers, totalUsers] = await Promise.all([
+		// Get list of users
+		db.select().from(Users).limit(PAGINATION_SIZE).offset(offsetAmount),
 
-	const totalUsers = await db.select({ count: count() }).from(Users);
+		// Get total number of users of pagination info
+		db.select({ count: count() }).from(Users)
+	]);
 
 	return { users: allUsers, total: totalUsers, currentPage: pageNum };
 };

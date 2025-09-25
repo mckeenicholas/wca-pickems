@@ -2,7 +2,10 @@
 	import { type WCAEvent, WCAEvents } from '$lib/types';
 	import CubeIcon from './CubeIcon.svelte';
 
-	let { event: selectedEvent = $bindable() }: { event: WCAEvent | null } = $props();
+	let {
+		event: selectedEvent = $bindable(),
+		eventOptions = WCAEvents
+	}: { event: WCAEvent | null; eventOptions?: readonly WCAEvent[] } = $props();
 </script>
 
 <div class="event-selector-wrapper">
@@ -15,7 +18,7 @@
 			All Events
 		</button>
 
-		{#each WCAEvents as event (event)}
+		{#each eventOptions as event (event)}
 			<button
 				class="event-button icon-button"
 				class:active={event === selectedEvent}

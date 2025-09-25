@@ -58,7 +58,10 @@
 		</h1>
 	</div>
 
-	<EventSelector bind:event={() => selectedEvent, (event) => handleEventChange(event)} />
+	<EventSelector
+		bind:event={() => selectedEvent, (event) => handleEventChange(event)}
+		eventOptions={data.events}
+	/>
 
 	{#if userIsLoggedIn}
 		<div class="rounded-lg border border-blue-200 bg-blue-50 p-4">

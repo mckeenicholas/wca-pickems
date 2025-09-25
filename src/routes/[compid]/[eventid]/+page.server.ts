@@ -26,39 +26,45 @@ export const load: PageServerLoad = async (event) => {
 		return redirect(302, '..');
 	}
 
-	const allCompetitors = await db
-		.select({
-			wcaUserId: Competitor.wcaUserId,
-			wcaId: Competitor.wcaId,
-			name: Competitor.name,
-			registrationId: Registration.id
-		})
-		.from(Registration)
-		.innerJoin(Competition, eq(Registration.competitionId, Competition.id))
-		.innerJoin(Competitor, eq(Registration.competitorId, Competitor.wcaUserId))
-		.where(and(eq(Competition.competitionId, compid), eq(Registration.event, eventid as WCAEvent)))
-		.orderBy(Competitor.name);
-
-	const predictions = await db
-		.select({
-			wcaUserId: Competitor.wcaUserId,
-			wcaId: Competitor.wcaId,
-			name: Competitor.name,
-			placement: Prediction.placement,
-			registrationId: Registration.id
-		})
-		.from(Prediction)
-		.innerJoin(Registration, eq(Prediction.registrationId, Registration.id))
-		.innerJoin(Competition, eq(Registration.competitionId, Competition.id))
-		.innerJoin(Competitor, eq(Registration.competitorId, Competitor.wcaUserId))
-		.where(
-			and(
-				eq(Competition.competitionId, compid),
-				eq(Registration.event, eventid as WCAEvent),
-				eq(Prediction.userId, userId.id)
+	const [allCompetitors, predictions] = await Promise.all([
+		// get competitors in event
+		db
+			.select({
+				wcaUserId: Competitor.wcaUserId,
+				wcaId: Competitor.wcaId,
+				name: Competitor.name,
+				registrationId: Registration.id
+			})
+			.from(Registration)
+			.innerJoin(Competition, eq(Registration.competitionId, Competition.id))
+			.innerJoin(Competitor, eq(Registration.competitorId, Competitor.wcaUserId))
+			.where(
+				and(eq(Competition.competitionId, compid), eq(Registration.event, eventid as WCAEvent))
 			)
-		)
-		.orderBy(Prediction.placement);
+			.orderBy(Competitor.name),
+
+		// get user predictions
+		db
+			.select({
+				wcaUserId: Competitor.wcaUserId,
+				wcaId: Competitor.wcaId,
+				name: Competitor.name,
+				placement: Prediction.placement,
+				registrationId: Registration.id
+			})
+			.from(Prediction)
+			.innerJoin(Registration, eq(Prediction.registrationId, Registration.id))
+			.innerJoin(Competition, eq(Registration.competitionId, Competition.id))
+			.innerJoin(Competitor, eq(Registration.competitorId, Competitor.wcaUserId))
+			.where(
+				and(
+					eq(Competition.competitionId, compid),
+					eq(Registration.event, eventid as WCAEvent),
+					eq(Prediction.userId, userId.id)
+				)
+			)
+			.orderBy(Prediction.placement)
+	]);
 
 	const predictionIds = new Set(predictions.map((p) => p.registrationId));
 	const competitors = allCompetitors.filter((c) => !predictionIds.has(c.registrationId));

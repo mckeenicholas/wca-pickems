@@ -17,17 +17,21 @@ export const load: PageServerLoad = async (event) => {
 		return redirect(302, '/');
 	}
 
-	const competitionEvents = await db
-		.selectDistinct({ event: Registration.event })
-		.from(Registration)
-		.innerJoin(Competition, eq(Registration.competitionId, Competition.id))
-		.where(eq(Competition.competitionId, compId));
+	const [competitionEvents, competition] = await Promise.all([
+		// Get all events at this competition
+		db
+			.selectDistinct({ event: Registration.event })
+			.from(Registration)
+			.innerJoin(Competition, eq(Registration.competitionId, Competition.id))
+			.where(eq(Competition.competitionId, compId)),
 
-	const [competition] = await db
-		.select({ allowEdits: Competition.allowEdits })
-		.from(Competition)
-		.where(eq(Competition.competitionId, compId))
-		.limit(1);
+		// Get whether edits are allowed
+		db
+			.select({ allowEdits: Competition.allowEdits })
+			.from(Competition)
+			.where(eq(Competition.competitionId, compId))
+			.limit(1)
+	]);
 
 	return {
 		competitionEvents,

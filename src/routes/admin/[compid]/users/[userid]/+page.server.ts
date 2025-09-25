@@ -21,21 +21,25 @@ export const load: PageServerLoad = async (event) => {
 		return redirect(302, '/admin');
 	}
 
-	const userName = await db.select({ name: Users.name }).from(Users).where(eq(Users.id, userId));
+	const [userName, personPredictions] = await Promise.all([
+		// Get User's name to display
+		db.select({ name: Users.name }).from(Users).where(eq(Users.id, userId)),
 
-	const personPredictions = await db
-		.select({
-			event: Registration.event,
-			competitorName: Competitor.name,
-			place: Prediction.placement,
-			score: Prediction.score
-		})
-		.from(Prediction)
-		.innerJoin(Registration, eq(Prediction.registrationId, Registration.id))
-		.innerJoin(Competition, eq(Registration.competitionId, Competition.id))
-		.innerJoin(Competitor, eq(Registration.competitorId, Competitor.wcaUserId))
-		.where(and(eq(Prediction.userId, userId), eq(Competition.competitionId, compId)))
-		.orderBy(Prediction.placement);
+		// Get all their predictions from this comp
+		db
+			.select({
+				event: Registration.event,
+				competitorName: Competitor.name,
+				place: Prediction.placement,
+				score: Prediction.score
+			})
+			.from(Prediction)
+			.innerJoin(Registration, eq(Prediction.registrationId, Registration.id))
+			.innerJoin(Competition, eq(Registration.competitionId, Competition.id))
+			.innerJoin(Competitor, eq(Registration.competitorId, Competitor.wcaUserId))
+			.where(and(eq(Prediction.userId, userId), eq(Competition.competitionId, compId)))
+			.orderBy(Prediction.placement)
+	]);
 
 	const predictionsByEvent = personPredictions.reduce<
 		Record<string, { competitorName: string; place: number; score: number }[]>

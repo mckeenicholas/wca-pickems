@@ -2,7 +2,7 @@ import { db } from '$lib/server/db';
 import { Competition, Prediction, Registration, Users } from '$lib/server/db/schema';
 import { fail } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { desc, and, eq, sum, count, countDistinct, sql } from 'drizzle-orm';
+import { desc, and, eq, sum, count, sql } from 'drizzle-orm';
 import { WCAEvents, type WCAEvent } from '$lib/types';
 import { PAGINATION_SIZE } from '$lib/util';
 
@@ -32,31 +32,88 @@ export const load: PageServerLoad = async (event) => {
 		eventId ? eq(Registration.event, eventId as WCAEvent) : undefined
 	);
 
-	// Get competition name first (this should always exist)
-	const competitionQuery = await db
-		.select({ competitionName: Competition.competitionName })
-		.from(Competition)
-		.where(eq(Competition.competitionId, compId));
+	const [competitionQuery, availableEventsQuery] = await Promise.all([
+		// Get competition name
+		db
+			.select({ competitionName: Competition.competitionName })
+			.from(Competition)
+			.where(eq(Competition.competitionId, compId)),
+
+		// Get available events
+		db
+			.selectDistinct({ event: Registration.event })
+			.from(Registration)
+			.innerJoin(Competition, eq(Registration.competitionId, Competition.id))
+			.where(eq(Competition.competitionId, compId))
+	]);
 
 	if (competitionQuery.length === 0) {
 		return fail(404, { error: 'Competition not found' });
 	}
 
 	const competitionName = competitionQuery[0].competitionName;
+	const events = availableEventsQuery.map((e) => e.event);
 
-	// Check if there are any predictions for this competition/event
-	const hasPredictionsQuery = await db
-		.select({ numPredictions: count() })
-		.from(Prediction)
-		.innerJoin(Registration, eq(Prediction.registrationId, Registration.id))
-		.innerJoin(Competition, eq(Competition.id, Registration.competitionId))
-		.where(baseConditions);
+	const leaderboardExpr = db.$with('leaderboard_cte').as(
+		db
+			.select({
+				userName: Users.name,
+				userId: Users.id,
+				score: sum(Prediction.score).as('score'),
+				rank: sql<string>`RANK() OVER (ORDER BY ${sum(Prediction.score)} DESC)`.as('rank')
+			})
+			.from(Prediction)
+			.innerJoin(Registration, eq(Prediction.registrationId, Registration.id))
+			.innerJoin(Competition, eq(Competition.id, Registration.competitionId))
+			.innerJoin(Users, eq(Users.id, Prediction.userId))
+			.where(baseConditions)
+			.groupBy(Users.id)
+	);
+
+	const [hasPredictionsQuery, totalUsersQuery, leaderboardResults, userStatsQuery] =
+		await Promise.all([
+			// Check if predictions exist
+			db
+				.select({ numPredictions: count() })
+				.from(Prediction)
+				.innerJoin(Registration, eq(Prediction.registrationId, Registration.id))
+				.innerJoin(Competition, eq(Competition.id, Registration.competitionId))
+				.where(baseConditions),
+
+			// Get total users
+			db.with(leaderboardExpr).select({ count: count() }).from(leaderboardExpr),
+
+			// Get paginated leaderboard results
+			db
+				.with(leaderboardExpr)
+				.select({
+					userName: leaderboardExpr.userName,
+					score: leaderboardExpr.score,
+					rank: leaderboardExpr.rank
+				})
+				.from(leaderboardExpr)
+				.orderBy(desc(leaderboardExpr.score))
+				.limit(PAGINATION_SIZE)
+				.offset(offsetCount),
+
+			// Get user stats
+			userId
+				? db
+						.with(leaderboardExpr)
+						.select({
+							rank: leaderboardExpr.rank,
+							userScore: leaderboardExpr.score
+						})
+						.from(leaderboardExpr)
+						.where(eq(leaderboardExpr.userId, userId))
+				: Promise.resolve([])
+		]);
 
 	const hasPredictions = (hasPredictionsQuery[0]?.numPredictions ?? 0) > 0;
 
-	// If no predictions, return early with empty data
 	if (!hasPredictions) {
 		return {
+			events,
 			leaderboardResults: [],
 			totalPages: 0,
 			totalUsers: 0,
@@ -69,47 +126,15 @@ export const load: PageServerLoad = async (event) => {
 		};
 	}
 
-	// Get total users count
-	const totalUsersQuery = await db
-		.select({
-			count: countDistinct(Users.id)
-		})
-		.from(Prediction)
-		.innerJoin(Registration, eq(Prediction.registrationId, Registration.id))
-		.innerJoin(Competition, eq(Competition.id, Registration.competitionId))
-		.innerJoin(Users, eq(Users.id, Prediction.userId))
-		.where(baseConditions);
-
 	const totalUsers = totalUsersQuery[0]?.count ?? 0;
 	const totalPages = Math.ceil(totalUsers / PAGINATION_SIZE);
 
-	// Create ranked query
-	const rankedQuery = db
-		.select({
-			userName: Users.name,
-			userId: Users.id,
-			score: sum(Prediction.score).as('score'),
-			rank: sql<string>`RANK() OVER (ORDER BY ${sum(Prediction.score)} DESC)`.as('rank')
-		})
-		.from(Prediction)
-		.innerJoin(Registration, eq(Prediction.registrationId, Registration.id))
-		.innerJoin(Competition, eq(Competition.id, Registration.competitionId))
-		.innerJoin(Users, eq(Users.id, Prediction.userId))
-		.where(baseConditions)
-		.groupBy(Users.id)
-		.as('ranked_results');
-
-	// Conditionally get user stats only if logged in
+	// Process user stats
 	let userRank = null;
 	let userScore = null;
 	let userPercentile = null;
 
-	if (userId) {
-		const userStatsQuery = await db
-			.select({ rank: rankedQuery.rank, userScore: rankedQuery.score })
-			.from(rankedQuery)
-			.where(eq(rankedQuery.userId, userId));
-
+	if (userId && userStatsQuery.length > 0) {
 		const userStats = userStatsQuery[0];
 		userRank = userStats ? parseInt(userStats.rank) : null;
 		userScore = userStats?.userScore ?? null;
@@ -117,19 +142,8 @@ export const load: PageServerLoad = async (event) => {
 			userRank && totalUsers > 0 ? ((totalUsers - userRank + 1) / totalUsers) * 100 : null;
 	}
 
-	// Get leaderboard results
-	const leaderboardResults = await db
-		.select({
-			userName: rankedQuery.userName,
-			score: rankedQuery.score,
-			rank: rankedQuery.rank
-		})
-		.from(rankedQuery)
-		.orderBy(desc(rankedQuery.score))
-		.limit(PAGINATION_SIZE)
-		.offset(offsetCount);
-
 	return {
+		events,
 		leaderboardResults,
 		totalPages,
 		totalUsers,

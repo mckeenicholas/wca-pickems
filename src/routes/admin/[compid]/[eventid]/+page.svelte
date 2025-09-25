@@ -1,11 +1,15 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import BackButton from '$lib/components/BackButton.svelte';
 	import DragReorder from '$lib/components/DragReorder.svelte';
 	import { eventNames, type WCAEvent } from '$lib/types';
 	import { MAX_PICKS } from '$lib/util';
 	import type { PageProps } from './$types';
 
 	const { data }: PageProps = $props();
+
+	const compid = page.params.compid!;
 
 	let competitors = $state(data.competitors ?? []);
 	let results = $state(data.results ?? []);
@@ -56,14 +60,13 @@
 	};
 </script>
 
+<BackButton to={resolve('/admin/[compid]', { compid })} />
 <div class="min-h-screen bg-gradient-to-br pt-4">
 	<div class="mx-auto max-w-6xl">
 		<!-- Header -->
 		<div class="mb-8 text-center">
 			<h1 class="mb-2 text-3xl font-bold text-slate-800">
-				Admin: Enter Results for {page.params.compid} Event: {eventNames[
-					page.params.eventid as WCAEvent
-				]}
+				Admin: Enter Results for {compid} Event: {eventNames[page.params.eventid as WCAEvent]}
 			</h1>
 		</div>
 

@@ -1,18 +1,21 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import BackButton from '$lib/components/BackButton.svelte';
 	import CubeIcon from '$lib/components/CubeIcon.svelte';
 	import { eventNames } from '$lib/types';
 	import type { PageProps } from './$types';
+	import { resolve } from '$app/paths';
 
 	const { data }: PageProps = $props();
 
-	const compId = page.params.compid;
+	const compid = page.params.compid!;
 </script>
 
 <svelte:head>
 	<title>Pickems Dashboard for {data.competitionName}</title>
 </svelte:head>
 
+<BackButton to={resolve('/home')} />
 <div class="min-h-screen bg-gradient-to-br">
 	<div class="mx-auto max-w-4xl px-4 py-12">
 		<!-- Header Section -->
@@ -28,7 +31,7 @@
 			<div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
 				{#each data.competitionEvents as event, index (index)}
 					<a
-						href="{compId}/{event.event}"
+						href={resolve('/[compid]/[eventid]', { compid, eventid: event.event })}
 						class="group flex items-center justify-between border-b border-slate-100 px-5 py-4 transition-colors duration-200 last:border-b-0 hover:bg-slate-50"
 					>
 						<div class="flex items-center space-x-4">

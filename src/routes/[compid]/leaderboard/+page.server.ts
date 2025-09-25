@@ -60,7 +60,9 @@ export const load: PageServerLoad = async (event) => {
 				userName: Users.name,
 				userId: Users.id,
 				score: sum(Prediction.score).as('score'),
-				rank: sql<string>`RANK() OVER (ORDER BY ${sum(Prediction.score)} DESC)`.as('rank')
+				rank: sql<string>`RANK() OVER (ORDER BY ${sum(Prediction.score)} DESC)`
+					.mapWith(Number)
+					.as('rank')
 			})
 			.from(Prediction)
 			.innerJoin(Registration, eq(Prediction.registrationId, Registration.id))
@@ -136,7 +138,7 @@ export const load: PageServerLoad = async (event) => {
 
 	if (userId && userStatsQuery.length > 0) {
 		const userStats = userStatsQuery[0];
-		userRank = userStats ? parseInt(userStats.rank) : null;
+		userRank = userStats ? userStats.rank : null;
 		userScore = userStats?.userScore ?? null;
 		userPercentile =
 			userRank && totalUsers > 0 ? ((totalUsers - userRank + 1) / totalUsers) * 100 : null;

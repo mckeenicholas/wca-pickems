@@ -1,12 +1,14 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import BackButton from '$lib/components/BackButton.svelte';
 	import CubeIcon from '$lib/components/CubeIcon.svelte';
 	import { eventNames } from '$lib/types';
+	import { resolve } from '$app/paths';
 	import type { PageProps } from './$types';
 
 	const { data }: PageProps = $props();
 
-	const compId = page.params.compid;
+	const compid = page.params.compid!;
 
 	let loadingStates = $state<Record<string, boolean>>({});
 	let allowEdits = $state(data.competition?.allowEdits ?? false);
@@ -17,9 +19,12 @@
 		loadingStates[event] = true;
 
 		try {
-			const response = await fetch(`/admin/${compId}/${event}/calculate`, {
-				method: 'POST'
-			});
+			const response = await fetch(
+				resolve('/admin/[compid]/[eventid]/calculate', { compid, eventid: event }),
+				{
+					method: 'POST'
+				}
+			);
 
 			if (!response.ok) {
 				const error = await response.json();
@@ -36,7 +41,7 @@
 		toggleLoading = true;
 
 		try {
-			const response = await fetch(`/admin/${compId}`, {
+			const response = await fetch(`/admin/${compid}`, {
 				method: 'PATCH',
 				headers: {
 					'Content-Type': 'application/json'
@@ -55,12 +60,24 @@
 	}
 </script>
 
+<BackButton to={resolve('/admin')} />
+
+<div class="absolute top-4 right-1">
+	<a href={resolve('/admin/[compid]/users', { compid })}>
+		<div
+			class="flex items-center gap-2 rounded-md bg-gray-700 px-4 py-2 text-lg font-medium text-white shadow"
+		>
+			View Users
+		</div>
+	</a>
+</div>
+
 <div class="min-h-screen bg-gradient-to-br">
 	<div class="mx-auto max-w-4xl px-4 py-12">
 		<!-- Header Section -->
 		<div class="mb-10 text-center">
 			<h1 class="mb-3 text-4xl font-bold text-slate-800">
-				Admin: {compId}
+				Admin: {compid}
 			</h1>
 		</div>
 
@@ -145,7 +162,7 @@
 				{#each data.competitionEvents as event, index (index)}
 					<div>
 						<a
-							href="{compId}/{event.event}"
+							href={resolve('/[compid]/[eventid]', { compid, eventid: event.event })}
 							class="group flex items-center justify-between border-b border-slate-100 pe-4 transition-colors duration-200 last:border-b-0 hover:bg-slate-50"
 						>
 							<!-- Left side - Event link -->

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { formatDate } from '$lib/util';
+	import { resolve } from '$app/paths';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -15,7 +16,7 @@
 		<div class="mb-10 flex items-center justify-between">
 			<h1 class="text-4xl font-bold text-slate-800">Competitions</h1>
 			<a
-				href="/login"
+				href={resolve('/login')}
 				class="rounded-full bg-blue-600 px-6 py-2 text-sm font-semibold text-white transition-colors duration-200 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
 			>
 				Login
@@ -26,7 +27,10 @@
 			<div class="space-y-4">
 				{#each data.competitions as competition (competition.id)}
 					<div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-						<a href="/{competition.competitionId}/leaderboard" class="block px-6 py-4">
+						<a
+							href={resolve('/[compid]/leaderboard', { compid: competition.id.toString() })}
+							class="block px-6 py-4"
+						>
 							<div class="flex items-start justify-between">
 								<div>
 									<h2 class="text-xl font-semibold text-slate-900">

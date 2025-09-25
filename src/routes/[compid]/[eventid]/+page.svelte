@@ -4,10 +4,13 @@
 	import type { PageProps } from './$types';
 	import { eventNames, type WCAEvent } from '$lib/types';
 	import { MAX_PICKS } from '$lib/util';
+	import BackButton from '$lib/components/BackButton.svelte';
+	import { resolve } from '$app/paths';
 
 	const { data }: PageProps = $props();
 
-	const eventId = page.params.eventid;
+	const eventid = page.params.eventid!;
+	const compid = page.params.compid!;
 
 	let competitors = $state(data.competitors ?? []);
 	let predictions = $state(data.predictions ?? []);
@@ -59,15 +62,16 @@
 </script>
 
 <svelte:head>
-	<title>Enter Predictions for {eventNames[eventId as WCAEvent]}</title>
+	<title>Enter Predictions for {eventNames[eventid as WCAEvent]}</title>
 </svelte:head>
 
+<BackButton to={resolve('/[compid]', { compid })} />
 <div class="min-h-screen bg-gradient-to-br pt-4">
 	<div class="mx-auto max-w-6xl">
 		<!-- Header -->
 		<div class="mb-8 text-center">
 			<h1 class="mb-2 text-3xl font-bold text-slate-800">
-				Predictions for {data.comp.name} - {eventNames[eventId as WCAEvent]}
+				Predictions for {data.comp.name} - {eventNames[eventid as WCAEvent]}
 			</h1>
 		</div>
 

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { PageServerData } from './$types';
+	import { resolve } from '$app/paths';
 
 	let { data }: { data: PageServerData } = $props();
 </script>
@@ -10,7 +11,7 @@
 		<div class="mb-8 flex items-center justify-between">
 			<h1 class="mb-2 text-3xl font-bold text-gray-900">Competition Management</h1>
 			<a
-				href="/admin/users"
+				href={resolve('/admin/users')}
 				class="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors duration-200 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
 			>
 				View Users
@@ -22,7 +23,7 @@
 				<h2 class="text-xl font-semibold text-gray-900">Import New Competition</h2>
 			</div>
 
-			<form method="POST" use:enhance class="space-y-6">
+			<form method="POST" use:enhance class="space-y-4">
 				<div>
 					<label for="compId" class="mb-2 block text-sm font-medium text-gray-700">
 						Competition ID
@@ -32,7 +33,7 @@
 							id="compId"
 							name="compId"
 							type="text"
-							class="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 transition-colors duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+							class="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 transition-colors duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
 							required
 						/>
 					</div>
@@ -40,7 +41,7 @@
 
 				<button
 					type="submit"
-					class="flex w-full items-center justify-center space-x-2 rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition-colors duration-200 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+					class="flex w-full items-center justify-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors duration-200 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
 				>
 					<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
@@ -90,7 +91,7 @@
 					{#each data.availableCompetitions as competition, index (competition.id)}
 						<div class="group px-6 py-4 transition-colors duration-150 hover:bg-gray-50">
 							<a
-								href="/admin/{competition.competitionId}"
+								href={resolve('/admin/[compid]', { compid: competition.competitionId })}
 								class="flex w-full items-center justify-between"
 							>
 								<div class="flex items-center space-x-4">

@@ -1,5 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
+	import BackButton from '$lib/components/BackButton.svelte';
 	import { PAGINATION_SIZE } from '$lib/util';
 	import type { PageProps } from './$types';
 
@@ -13,12 +16,20 @@
 	let isFirstPage = $state(currentPage === 0);
 
 	const nextPage = () => {
-		goto(`?page=${currentPage + 1}`);
+		const url = new URL(page.url);
+
+		url.searchParams.set('page', String(currentPage + 1));
+
+		// eslint-disable-next-line svelte/no-navigation-without-resolve
+		goto(url);
 	};
 
 	const prevPage = () => {
 		if (!isFirstPage) {
-			goto(`?page=${currentPage - 1}`);
+			const url = new URL(page.url);
+			url.searchParams.set('page', String(currentPage - 1));
+			// eslint-disable-next-line svelte/no-navigation-without-resolve
+			goto(url);
 		}
 	};
 </script>
@@ -27,8 +38,9 @@
 	<title>Admin - User List</title>
 </svelte:head>
 
-<main class="container mx-auto p-4">
-	<h1 class="mb-6 text-3xl font-bold">All Users</h1>
+<BackButton to={resolve('/admin')} />
+<div class="container mx-auto p-4">
+	<h1 class="mt-2 mb-6 text-center text-3xl font-bold">All Users</h1>
 
 	{#if data.users && data.users.length > 0}
 		<div class="overflow-x-auto rounded-lg bg-white shadow-md">
@@ -115,4 +127,4 @@
 	{:else}
 		<p class="text-center text-gray-600">No users found.</p>
 	{/if}
-</main>
+</div>

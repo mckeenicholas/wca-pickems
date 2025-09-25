@@ -1,15 +1,21 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
+	import BackButton from '$lib/components/BackButton.svelte';
 	import { eventNames, type WCAEvent } from '$lib/types';
 	import type { PageProps } from './$types';
 
 	const { data }: PageProps = $props();
+
+	const compid = page.params.compid!;
 </script>
 
-<main class="container mx-auto p-4">
+<BackButton to={resolve('/admin/[compid]/users', { compid })} />
+<div class="container mx-auto mt-2 p-4">
 	{#if data.userName.length > 0}
-		<h1 class="mb-6 text-3xl font-bold">Predictions for {data.userName[0].name}</h1>
+		<h1 class="mb-6 text-center text-3xl font-bold">Predictions for {data.userName[0].name}</h1>
 	{:else}
-		<h1 class="mb-6 text-3xl font-bold">User Not Found</h1>
+		<h1 class="mb-6 text-center text-3xl font-bold">User Not Found</h1>
 	{/if}
 
 	{#if Object.keys(data.predictions).length > 0}
@@ -31,4 +37,4 @@
 	{:else}
 		<p class="text-center text-gray-600">No predictions found for this user.</p>
 	{/if}
-</main>
+</div>

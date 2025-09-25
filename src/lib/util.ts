@@ -3,7 +3,7 @@ import { dev } from '$app/environment';
 export const BASE_URL = dev ? 'http://localhost:5173' : 'https://pickems.nmckee.org';
 
 export const WCA_URL = dev
-	? 'https://www.staging.worldcubeassociation.org'
+	? 'https://staging.worldcubeassociation.org'
 	: 'https://www.worldcubeassociation.org';
 
 export const APPLICATION_ID = dev

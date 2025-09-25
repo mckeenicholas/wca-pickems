@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { formatDate } from '$lib/util';
 	import type { PageProps } from './$types';
+	import { resolve } from '$app/paths';
 
 	let { data }: PageProps = $props();
 </script>
@@ -12,12 +13,22 @@
 <div class="min-h-screen bg-gradient-to-br">
 	<div class="mx-auto max-w-5xl px-4 py-12">
 		<!-- Header Section -->
-		<h1 class="mb-10 text-center text-4xl font-bold text-slate-800">Competitions</h1>
+		<div class="relative mb-8">
+			<h1 class="mb-2 text-center text-3xl font-bold text-gray-900">Competitions</h1>
+			<form method="POST" action="?/logout">
+				<button
+					class="text-md absolute top-1/2 right-0 inline-flex -translate-y-1/2 items-center rounded-lg bg-blue-600 px-4 py-2 font-medium text-white shadow-sm transition-colors duration-200 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+				>
+					Logout
+				</button>
+			</form>
+		</div>
 
 		<!-- Competitions List -->
 		{#if data.competitions && data.competitions.length > 0}
 			<div class="space-y-4">
 				{#each data.competitions as competition (competition.id)}
+					{@const resolvePath = { compid: competition.competitionId }}
 					<div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
 						<div class="p-6">
 							<!-- Competition Header -->
@@ -48,7 +59,7 @@
 							<!-- Action Buttons -->
 							<div class="flex flex-wrap gap-3">
 								<a
-									href="/{competition.competitionId}"
+									href={resolve('/[compid]', resolvePath)}
 									class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-blue-700"
 								>
 									<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -63,7 +74,7 @@
 								</a>
 
 								<a
-									href="/{competition.competitionId}/leaderboard"
+									href={resolve('/[compid]/leaderboard', resolvePath)}
 									class="inline-flex items-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors duration-200 hover:bg-slate-100"
 								>
 									<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

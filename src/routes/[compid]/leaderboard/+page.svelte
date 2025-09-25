@@ -1,9 +1,11 @@
 <script lang="ts">
 	import EventSelector from '$lib/components/EventSelector.svelte';
-	import type { WCAEvent } from '$lib/types';
+	import { eventNames, type WCAEvent } from '$lib/types';
 	import type { PageProps } from './$types';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
+	import BackButton from '$lib/components/BackButton.svelte';
+	import { resolve } from '$app/paths';
 
 	const { data }: PageProps = $props();
 
@@ -26,6 +28,7 @@
 
 		url.searchParams.delete('page');
 
+		// eslint-disable-next-line svelte/no-navigation-without-resolve
 		goto(url, { replaceState: false });
 	}
 
@@ -36,6 +39,8 @@
 		} else {
 			url.searchParams.delete('page');
 		}
+
+		// eslint-disable-next-line svelte/no-navigation-without-resolve
 		goto(url, { replaceState: false });
 	}
 
@@ -51,6 +56,7 @@
 	<title>Pickems Leaderboard for {data.compName}</title>
 </svelte:head>
 
+<BackButton to={resolve('/home')} />
 <div class="mx-auto max-w-[75vw] space-y-6 p-4">
 	<div class="mb-8 text-center">
 		<h1 class="mb-2 text-3xl font-bold text-gray-700">
@@ -103,7 +109,7 @@
 				{#each data.leaderboardResults as result, idx (result.userName)}
 					<div
 						class="border-l-4 px-4 py-2 transition-colors duration-150 hover:bg-gray-50 {getRankingClasses(
-							parseInt(result.rank)
+							result.rank
 						)}"
 					>
 						<div class="flex items-center justify-between">
@@ -181,9 +187,9 @@
 			</div>
 			<h3 class="mb-2 text-lg font-medium text-gray-900">No Predictions Yet</h3>
 			<p class="text-gray-600">
-				No predictions have been made for this {selectedEvent
-					? `event (${selectedEvent})`
-					: 'competition'} yet.
+				No predictions have been made for {selectedEvent
+					? `${eventNames[selectedEvent as WCAEvent]}`
+					: 'this competition'} yet.
 			</p>
 		</div>
 	{:else}

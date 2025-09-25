@@ -3,6 +3,7 @@
 	import { APPLICATION_ID, redirectURI, WCA_URL } from '$lib/util';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
+	import { resolve } from '$app/paths';
 
 	let error = $state<string | null>(null);
 
@@ -37,7 +38,7 @@
 				const result = await response.json();
 
 				if (result.success) {
-					goto('/home');
+					goto(resolve('/home'));
 				} else {
 					error = result.error || 'Authentication failed';
 				}

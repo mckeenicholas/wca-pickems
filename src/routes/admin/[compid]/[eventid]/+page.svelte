@@ -36,8 +36,6 @@
 				throw new Error(errorData.error || 'Failed to save results');
 			}
 
-			const result = await response.json();
-			console.log('Results saved successfully:', result);
 			saveStatus = 'success';
 
 			// Reset to idle after 2 seconds

@@ -21,20 +21,13 @@
 				method: 'POST'
 			});
 
-			if (response.ok) {
-				// Success feedback - you could add a toast notification here
-				console.log(`Scores calculated successfully for ${event}`);
-				// Optional: Show success message or refresh data
-			} else {
+			if (!response.ok) {
 				const error = await response.json();
 				console.error('Error calculating scores:', error);
-				// Optional: Show error message
 			}
 		} catch (error) {
 			console.error('Network error:', error);
-			// Optional: Show error message
 		} finally {
-			// Clear loading state
 			loadingStates[event] = false;
 		}
 	}
@@ -53,16 +46,9 @@
 
 			if (response.ok) {
 				allowEdits = !allowEdits;
-				console.log(`Allow edits toggled to: ${allowEdits}`);
-				// Optional: Show success message
-			} else {
-				const error = await response.json();
-				console.error('Error toggling allow edits:', error);
-				// Optional: Show error message
 			}
 		} catch (error) {
 			console.error('Network error:', error);
-			// Optional: Show error message
 		} finally {
 			toggleLoading = false;
 		}

@@ -32,15 +32,6 @@ export async function POST(event) {
 		body: new URLSearchParams(tokenData).toString()
 	});
 
-	console.log(response);
-	console.log({
-		grant_type: 'authorization_code',
-		code: accessCode,
-		client_id: APPLICATION_ID,
-		client_secret: APPLICATION_SECRET,
-		redirect_uri: redirectURI
-	});
-
 	if (!response.ok) {
 		createServerLog(`WCA Oauth Error: ${response.statusText}`, 'error');
 		return json({ error: 'Invalid WCA Code' }, { status: 401 });

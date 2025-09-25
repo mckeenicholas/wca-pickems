@@ -38,8 +38,6 @@
 				throw new Error(errorData.error || 'Failed to save predictions');
 			}
 
-			const result = await response.json();
-			console.log('Predictions saved successfully:', result);
 			saveStatus = 'success';
 
 			// Reset to idle after 2 seconds

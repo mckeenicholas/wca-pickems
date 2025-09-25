@@ -81,10 +81,8 @@ const loadCompetitionData = async (id: string) => {
 	let competitionRecordId: number;
 
 	if (existingCompetition.length > 0) {
-		console.log(`Competition '${id}' already exists. Updating competitors and registrations.`);
 		competitionRecordId = existingCompetition[0].id;
 	} else {
-		console.log(`Competition '${id}' not found. Creating new competition.`);
 		const newCompetition = await db
 			.insert(Competition)
 			.values({
@@ -108,12 +106,9 @@ const loadCompetitionData = async (id: string) => {
 
 	if (competitorsToInsert.length > 0) {
 		await db.insert(Competitor).values(competitorsToInsert).onConflictDoNothing();
-
-		console.log(`Successfully upserted ${competitorsToInsert.length} competitors.`);
 	}
 
 	await db.delete(Registration).where(eq(Registration.competitionId, competitionRecordId));
-	console.log(`Cleared existing registrations for competition ID: ${competitionRecordId}`);
 
 	const registrationsToInsert = [];
 	for (const person of wcifData.persons) {
@@ -134,8 +129,5 @@ const loadCompetitionData = async (id: string) => {
 
 	if (registrationsToInsert.length > 0) {
 		await db.insert(Registration).values(registrationsToInsert);
-		console.log(`Successfully inserted ${registrationsToInsert.length} registrations.`);
-	} else {
-		console.log('No new registrations to insert.');
 	}
 };

@@ -35,6 +35,6 @@ export const load: PageServerLoad = async (event) => {
 
 	return {
 		competitionEvents,
-		competition
+		competition: competition[0]
 	};
 };

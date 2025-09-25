@@ -2,11 +2,14 @@ import { dev } from '$app/environment';
 
 export const BASE_URL = dev ? 'http://localhost:5173' : 'https://pickems.nmckee.org';
 
-export const WCA_URL = 'https://staging.worldcubeassociation.org';
-// export const APPLICATION_ID = '4yQGrgzDGJdfozVgKphX7FqQqaNF1xpD-42U_5b3FCo'
+export const WCA_URL = dev
+	? 'https://www.staging.worldcubeassociation.org'
+	: 'https://www.worldcubeassociation.org';
+
 export const APPLICATION_ID = dev
 	? 'SShVOFJ3BgNoCgwF8cB-fITXyz9yyRHPbRXt5cNKdcA'
 	: 'fr7kui7q788Mr_ZK3hvmMNsWvY-q42AjZhDUn6kBhxk';
+
 export const redirectURI = `${BASE_URL}/login`;
 
 export const MAX_PICKS = 8;

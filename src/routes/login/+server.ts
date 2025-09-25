@@ -16,18 +16,20 @@ export async function POST(event) {
 		return json({ error: 'WCA token is required' }, { status: 400 });
 	}
 
+	const tokenData = {
+		grant_type: 'authorization_code',
+		code: accessCode,
+		client_id: APPLICATION_ID,
+		client_secret: APPLICATION_SECRET,
+		redirect_uri: redirectURI
+	};
+
 	const response = await fetch(`${WCA_URL}/oauth/token`, {
 		method: 'POST',
 		headers: {
-			'Content-Type': 'application/json'
+			'Content-Type': 'application/x-www-form-urlencoded'
 		},
-		body: JSON.stringify({
-			grant_type: 'authorization_code',
-			code: accessCode,
-			client_id: APPLICATION_ID,
-			client_secret: APPLICATION_SECRET,
-			redirect_uri: redirectURI
-		})
+		body: new URLSearchParams(tokenData).toString()
 	});
 
 	console.log(response);

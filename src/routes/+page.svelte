@@ -28,7 +28,7 @@
 				{#each data.competitions as competition (competition.id)}
 					<div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
 						<a
-							href={resolve('/[compid]/leaderboard', { compid: competition.id.toString() })}
+							href={resolve('/[compid]/leaderboard', { compid: competition.competitionId })}
 							class="block px-6 py-4"
 						>
 							<div class="flex items-start justify-between">

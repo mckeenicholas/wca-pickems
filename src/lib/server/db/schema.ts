@@ -54,7 +54,8 @@ export const Competition = pgTable('competitions', {
 	competitionId: text().notNull().unique(),
 	competitionName: text().notNull(),
 	startDate: date().notNull(),
-	allowEdits: boolean().notNull().default(true)
+	allowEdits: boolean().notNull().default(true),
+	visible: boolean().notNull().default(true)
 });
 
 export const Competitor = pgTable('competitors', {

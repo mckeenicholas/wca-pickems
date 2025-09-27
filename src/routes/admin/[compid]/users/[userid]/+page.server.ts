@@ -6,7 +6,7 @@ import { eq, and } from 'drizzle-orm';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
-	if (!isAdmin(event.locals.user?.id)) {
+	if (!(await isAdmin(event.locals.user?.id))) {
 		return redirect(302, '/login');
 	}
 

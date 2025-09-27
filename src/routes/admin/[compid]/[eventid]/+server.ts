@@ -3,7 +3,7 @@ import { Competition, Registration, Result } from '$lib/server/db/schema';
 import { WCAEvents, type WCAEvent } from '$lib/types';
 import { MAX_PICKS } from '$lib/util';
 import { json, type RequestHandler } from '@sveltejs/kit';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, count } from 'drizzle-orm';
 import { exists } from 'drizzle-orm/sql';
 
 interface IResult {
@@ -30,17 +30,13 @@ export const POST: RequestHandler = async ({ request, params, locals }) => {
 			return json({ error: 'Missing or invalid event ID or competition ID' }, { status: 400 });
 		}
 
-		const compQuery = await db
-			.select({ allowEdits: Competition.allowEdits })
+		const [compQuery] = await db
+			.select({ count: count() })
 			.from(Competition)
 			.where(eq(Competition.competitionId, compid));
 
-		if (compQuery.length == 0) {
+		if (compQuery.count == 0) {
 			return json({ error: 'Competition with given ID does not exist' }, { status: 404 });
-		}
-
-		if (!compQuery[0].allowEdits) {
-			return json({ error: 'Edits are no longer allowed' }, { status: 400 });
 		}
 
 		await db.transaction(async (tx) => {

@@ -27,7 +27,7 @@
 		<!-- Competitions List -->
 		{#if data.competitions && data.competitions.length > 0}
 			<div class="space-y-4">
-				{#each data.competitions as competition (competition.id)}
+				{#each data.competitions as competition (competition.competitionId)}
 					{@const resolvePath = { compid: competition.competitionId }}
 					<div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
 						<div class="p-6">
@@ -78,15 +78,40 @@
 									class="inline-flex items-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors duration-200 hover:bg-slate-100"
 								>
 									<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											width="24"
+											height="24"
+											viewBox="0 0 24 24"
+											fill="none"
+											stroke="currentColor"
+											stroke-width="2"
 											stroke-linecap="round"
 											stroke-linejoin="round"
-											stroke-width="2"
-											d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-										></path>
+											class="lucide lucide-circle-star-icon lucide-circle-star"
+											><path
+												d="M11.051 7.616a1 1 0 0 1 1.909.024l.737 1.452a1 1 0 0 0 .737.535l1.634.256a1 1 0 0 1 .588 1.806l-1.172 1.168a1 1 0 0 0-.282.866l.259 1.613a1 1 0 0 1-1.541 1.134l-1.465-.75a1 1 0 0 0-.912 0l-1.465.75a1 1 0 0 1-1.539-1.133l.258-1.613a1 1 0 0 0-.282-.867l-1.156-1.152a1 1 0 0 1 .572-1.822l1.633-.256a1 1 0 0 0 .737-.535z"
+											/><circle cx="12" cy="12" r="10" /></svg
+										>
 									</svg>
 									Leaderboard
 								</a>
+								{#if competition.hasResults}
+									<a
+										href={resolve('/[compid]/results', resolvePath)}
+										class="inline-flex items-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors duration-200 hover:bg-slate-100"
+									>
+										<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+											></path>
+										</svg>
+										My Results
+									</a>
+								{/if}
 							</div>
 						</div>
 					</div>

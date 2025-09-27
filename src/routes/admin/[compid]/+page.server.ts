@@ -13,7 +13,7 @@ export const load: PageServerLoad = async (event) => {
 		return redirect(302, '/login');
 	}
 
-	if (!isAdmin(userId.id)) {
+	if (!(await isAdmin(userId.id))) {
 		return redirect(302, '/');
 	}
 

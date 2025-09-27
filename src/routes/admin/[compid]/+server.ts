@@ -14,21 +14,35 @@ export const PATCH: RequestHandler = async ({ request, params, locals }) => {
 		return error(401, 'Unauthorized');
 	}
 
-	if (!isAdmin(userId.id)) {
+	if (!(await isAdmin(userId.id))) {
 		return error(403, 'Forbidden - Admin access required');
 	}
 
 	try {
-		const { allowEdits } = await request.json();
+		const body = await request.json();
+		const updateData: Partial<{ visible: boolean; allowEdits: boolean }> = {};
 
-		if (typeof allowEdits !== 'boolean') {
-			return error(400, 'Invalid allowEdits value - must be boolean');
+		if ('visible' in body) {
+			if (typeof body.visible !== 'boolean') {
+				return error(400, 'Invalid visible value - must be boolean');
+			}
+			updateData.visible = body.visible;
 		}
 
-		// Update the competition's allowEdits status
-		await db.update(Competition).set({ allowEdits }).where(eq(Competition.competitionId, compId));
+		if ('allowEdits' in body) {
+			if (typeof body.allowEdits !== 'boolean') {
+				return error(400, 'Invalid allowEdits value - must be boolean');
+			}
+			updateData.allowEdits = body.allowEdits;
+		}
 
-		return json({ success: true, allowEdits });
+		if (Object.keys(updateData).length === 0) {
+			return error(400, 'No valid fields provided');
+		}
+
+		await db.update(Competition).set(updateData).where(eq(Competition.competitionId, compId));
+
+		return json({ success: true, updated: updateData });
 	} catch (err) {
 		console.error('Error updating competition:', err);
 		return error(500, 'Internal server error');

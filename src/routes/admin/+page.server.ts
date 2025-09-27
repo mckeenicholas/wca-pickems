@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db/index.js';
-import { Users, Competitor, Competition, Registration } from '$lib/server/db/schema';
+import { Competitor, Competition, Registration } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
@@ -13,11 +13,18 @@ export const load: PageServerLoad = async (event) => {
 		return redirect(302, '/login');
 	}
 
-	if (!isAdmin(userId.id)) {
+	if (!(await isAdmin(userId.id))) {
 		return redirect(302, '/');
 	}
 
-	const availableCompetitions = await db.select().from(Competition).orderBy(Competition.startDate);
+	const availableCompetitions = await db
+		.select({
+			competitionName: Competition.competitionName,
+			competitionId: Competition.competitionId,
+			visible: Competition.visible
+		})
+		.from(Competition)
+		.orderBy(Competition.startDate);
 
 	return { availableCompetitions };
 };
@@ -30,13 +37,7 @@ export const actions = {
 			return fail(401, { error: 'Unauthorized' });
 		}
 
-		const isAdminRow = await db
-			.select({ isAdmin: Users.isAdmin })
-			.from(Users)
-			.where(eq(Users.id, userId.id))
-			.limit(1);
-
-		if (!isAdminRow.length || !isAdminRow[0].isAdmin) {
+		if (!(await isAdmin(userId.id))) {
 			return fail(403, { error: 'Forbidden' });
 		}
 

@@ -1,0 +1,1 @@
+ALTER TABLE "competitions" ADD COLUMN "visible" boolean DEFAULT true NOT NULL;

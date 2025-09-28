@@ -81,7 +81,7 @@ export const Registration = pgTable(
 );
 
 export const Prediction = pgTable(
-	'predictsions',
+	'predictions',
 	{
 		id: serial().primaryKey(),
 		userId: integer()

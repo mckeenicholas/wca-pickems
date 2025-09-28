@@ -8,7 +8,8 @@ import {
 	serial,
 	text,
 	timestamp,
-	varchar
+	varchar,
+	index
 } from 'drizzle-orm/pg-core';
 
 const WCAEvents = [
@@ -66,26 +67,34 @@ export const Competitor = pgTable('competitors', {
 
 export const EventEnum = pgEnum('event', WCAEvents);
 
-export const Registration = pgTable('registrations', {
-	id: serial().primaryKey(),
-	competitorId: integer().references(() => Competitor.wcaUserId, { onDelete: 'set null' }),
-	competitionId: integer()
-		.notNull()
-		.references(() => Competition.id, { onDelete: 'cascade' }),
-	event: EventEnum().notNull()
-});
+export const Registration = pgTable(
+	'registrations',
+	{
+		id: serial().primaryKey(),
+		competitorId: integer().references(() => Competitor.wcaUserId, { onDelete: 'set null' }),
+		competitionId: integer()
+			.notNull()
+			.references(() => Competition.id, { onDelete: 'cascade' }),
+		event: EventEnum().notNull()
+	},
+	(table) => [index('registration_competitionId_idx').on(table.competitionId)]
+);
 
-export const Prediction = pgTable('predictions', {
-	id: serial().primaryKey(),
-	userId: integer()
-		.notNull()
-		.references(() => Users.id, { onDelete: 'cascade' }),
-	registrationId: integer()
-		.notNull()
-		.references(() => Registration.id, { onDelete: 'set null' }),
-	placement: integer().notNull(),
-	score: real().notNull().default(0)
-});
+export const Prediction = pgTable(
+	'predictsions',
+	{
+		id: serial().primaryKey(),
+		userId: integer()
+			.notNull()
+			.references(() => Users.id, { onDelete: 'cascade' }),
+		registrationId: integer()
+			.notNull()
+			.references(() => Registration.id, { onDelete: 'set null' }),
+		placement: integer().notNull(),
+		score: real().notNull().default(0)
+	},
+	(table) => [index('prediction_userid_idx').on(table.userId)]
+);
 
 export const Result = pgTable('results', {
 	id: serial().primaryKey(),

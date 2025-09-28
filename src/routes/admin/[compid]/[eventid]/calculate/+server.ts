@@ -1,6 +1,7 @@
 import { db } from '$lib/server/db/index.js';
 import { Competition, Prediction, Registration, Result } from '$lib/server/db/schema.js';
 import { WCAEvents, type WCAEvent } from '$lib/types.js';
+import { MAX_PICKS } from '$lib/util';
 import { json } from '@sveltejs/kit';
 import { and, eq, count, sql } from 'drizzle-orm';
 
@@ -19,24 +20,11 @@ export const POST = async (event) => {
 	}
 
 	await db.transaction(async (tx) => {
-		const userPicks = tx.$with('userPicks').as(
-			tx
-				.select({ userId: Prediction.userId, numPicks: count().as('numPicks') })
-				.from(Prediction)
-				.innerJoin(Registration, eq(Prediction.registrationId, Registration.id))
-				.innerJoin(Competition, eq(Registration.competitionId, Competition.id))
-				.where(
-					and(eq(Competition.competitionId, compId), eq(Registration.event, eventId as WCAEvent))
-				)
-				.groupBy(Prediction.userId)
-		);
-
 		await tx
-			.with(userPicks)
 			.update(Prediction)
 			.set({
 				score: sql`(
-    (SELECT "numPicks" FROM "userPicks" WHERE "userPicks"."userId" = ${Prediction.userId}) - ${Prediction.placement} + 1
+    ${MAX_PICKS} - ${Prediction.placement} + 1
 )::float / POWER(${DECAY_FACTOR}, ABS(${Prediction.placement} - ${Result.placement}))`
 			})
 			.from(Registration)

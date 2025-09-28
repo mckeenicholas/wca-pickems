@@ -35,10 +35,9 @@
 		{#if data.predictions && data.predictions.length > 0}
 			<div class="space-y-6">
 				{#each data.predictions as event (event)}
-					{@const eventScore = event.predictions.reduce(
-						(total, prediction) => total + prediction.score,
-						0
-					)}
+					{@const eventScore = event.predictions
+						.reduce((total, prediction) => total + prediction.score, 0)
+						.toFixed(2)}
 					<div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
 						<div class="border-b border-slate-200 bg-slate-50 px-4 py-4">
 							<div class="flex items-center justify-between">
@@ -47,7 +46,7 @@
 								</h2>
 								<div class="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700">
 									{eventScore}
-									{eventScore === 1 ? 'point' : 'points'}
+									{eventScore === '1.00' ? 'point' : 'points'}
 								</div>
 							</div>
 						</div>

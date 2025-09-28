@@ -5,12 +5,14 @@
 	const { data }: PageProps = $props();
 
 	const totalScore = $derived(
-		data.predictions?.reduce(
-			(total, event) =>
-				total +
-				event.predictions.reduce((eventTotal, prediction) => eventTotal + prediction.score, 0),
-			0
-		) || 0
+		data.predictions
+			?.reduce(
+				(total, event) =>
+					total +
+					event.predictions.reduce((eventTotal, prediction) => eventTotal + prediction.score, 0),
+				0
+			)
+			.toFixed(2) || 0
 	);
 </script>
 
@@ -27,7 +29,7 @@
 			</h1>
 			<div class="text-center text-lg">
 				My Score: {totalScore}
-				{totalScore === 1 ? 'point' : 'points'}
+				{totalScore === '1.00' ? 'point' : 'points'}
 			</div>
 		</div>
 

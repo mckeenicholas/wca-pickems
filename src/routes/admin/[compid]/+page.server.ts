@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 import type { PageServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
 import { isAdmin } from '$lib/server/serverUtils';
+import { eventOrderIdx } from '$lib/types';
 
 export const load: PageServerLoad = async (event) => {
 	const compId = event.params.compid;
@@ -25,13 +26,15 @@ export const load: PageServerLoad = async (event) => {
 			.innerJoin(Competition, eq(Registration.competitionId, Competition.id))
 			.where(eq(Competition.competitionId, compId)),
 
-		// Get whether edits are allowed
+		// Get competition info
 		db
-			.select({ allowEdits: Competition.allowEdits })
+			.select({ allowEdits: Competition.allowEdits, isVisible: Competition.visible })
 			.from(Competition)
 			.where(eq(Competition.competitionId, compId))
 			.limit(1)
 	]);
+
+	competitionEvents.sort((a, b) => eventOrderIdx[a.event] - eventOrderIdx[b.event]);
 
 	return {
 		competitionEvents,

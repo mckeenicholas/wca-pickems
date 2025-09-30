@@ -9,7 +9,8 @@ import {
 	text,
 	timestamp,
 	varchar,
-	index
+	index,
+	uniqueIndex
 } from 'drizzle-orm/pg-core';
 
 const WCAEvents = [
@@ -34,35 +35,35 @@ const WCAEvents = [
 
 export const Users = pgTable('users', {
 	id: serial().primaryKey(),
-	wcaUserId: integer().notNull(),
-	wcaId: varchar({ length: 10 }).unique(),
-	name: text().notNull(),
-	isAdmin: boolean().notNull().default(false)
+	wcaUserId: integer('wca_user_id').notNull(),
+	wcaId: varchar('wca_id', { length: 10 }).unique(),
+	name: text('name').notNull(),
+	isAdmin: boolean('is_admin').notNull().default(false)
 });
 
 export const Sessions = pgTable('sessions', {
-	sessionId: varchar({ length: 64 }).primaryKey(),
-	userId: integer()
+	sessionId: varchar('session_id', { length: 64 }).primaryKey(),
+	userId: integer('user_id')
 		.references(() => Users.id, { onDelete: 'cascade' })
 		.notNull(),
-	expiresAt: timestamp().notNull(),
-	wcaToken: text().notNull(),
-	wcaRefreshToken: text().notNull()
+	expiresAt: timestamp('expires_at').notNull(),
+	wcaToken: text('wca_token').notNull(),
+	wcaRefreshToken: text('wca_refresh_token').notNull()
 });
 
 export const Competition = pgTable('competitions', {
 	id: serial().primaryKey(),
-	competitionId: text().notNull().unique(),
-	competitionName: text().notNull(),
-	startDate: date().notNull(),
-	allowEdits: boolean().notNull().default(true),
-	visible: boolean().notNull().default(true)
+	competitionId: text('competition_id').notNull().unique(),
+	competitionName: text('competition_name').notNull(),
+	startDate: date('start_date').notNull(),
+	allowEdits: boolean('allow_edits').notNull().default(true),
+	visible: boolean('visible').notNull().default(true)
 });
 
 export const Competitor = pgTable('competitors', {
-	wcaUserId: integer().primaryKey(),
-	wcaId: varchar({ length: 10 }).unique(),
-	name: text().notNull()
+	wcaUserId: integer('wca_user_id').primaryKey(),
+	wcaId: varchar('wca_id', { length: 10 }).unique(),
+	name: text('name').notNull()
 });
 
 export const EventEnum = pgEnum('event', WCAEvents);
@@ -70,39 +71,48 @@ export const EventEnum = pgEnum('event', WCAEvents);
 export const Registration = pgTable(
 	'registrations',
 	{
-		id: serial().primaryKey(),
-		competitorId: integer().references(() => Competitor.wcaUserId, { onDelete: 'set null' }),
-		competitionId: integer()
+		id: serial('id').primaryKey(),
+		competitorId: integer('competitor_id').references(() => Competitor.wcaUserId, {
+			onDelete: 'cascade'
+		}),
+		competitionId: integer('competition_id')
 			.notNull()
 			.references(() => Competition.id, { onDelete: 'cascade' }),
-		event: EventEnum().notNull(),
-		seedTime: integer()
+		event: EventEnum('event').notNull(),
+		seedTime: integer('seed_time')
 	},
-	(table) => [index('registration_competitionId_idx').on(table.competitionId)]
+	(table) => [
+		index('registration_competition_id_idx').on(table.competitionId),
+		uniqueIndex('registration_uniqueinfo_idx').on(
+			table.competitorId,
+			table.competitionId,
+			table.event
+		)
+	]
 );
 
 export const Prediction = pgTable(
 	'predictions',
 	{
-		id: serial().primaryKey(),
-		userId: integer()
+		id: serial('id').primaryKey(),
+		userId: integer('user_id')
 			.notNull()
 			.references(() => Users.id, { onDelete: 'cascade' }),
-		registrationId: integer()
+		registrationId: integer('registration_id')
 			.notNull()
-			.references(() => Registration.id, { onDelete: 'set null' }),
-		placement: integer().notNull(),
-		score: real().notNull().default(0)
+			.references(() => Registration.id, { onDelete: 'cascade' }),
+		placement: integer('placement').notNull(),
+		score: real('score').notNull().default(0)
 	},
-	(table) => [index('prediction_userid_idx').on(table.userId)]
+	(table) => [index('prediction_user_id_idx').on(table.userId)]
 );
 
 export const Result = pgTable('results', {
-	id: serial().primaryKey(),
-	registrationId: integer()
+	id: serial('id').primaryKey(),
+	registrationId: integer('registration_id')
 		.notNull()
-		.references(() => Registration.id, { onDelete: 'set null' }),
-	placement: integer().notNull()
+		.references(() => Registration.id, { onDelete: 'cascade' }),
+	placement: integer('placement').notNull()
 });
 
 export type UserTable = typeof Users.$inferSelect;
@@ -123,5 +133,5 @@ export type RegistrationTableInsert = typeof Registration.$inferInsert;
 export type PredictionsTable = typeof Prediction.$inferSelect;
 export type PredictionsTableInsert = typeof Prediction.$inferInsert;
 
-export type ResultsTable = typeof Prediction.$inferSelect;
-export type ResultsTableInsert = typeof Prediction.$inferInsert;
+export type ResultsTable = typeof Result.$inferSelect;
+export type ResultsTableInsert = typeof Result.$inferInsert;

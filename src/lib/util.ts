@@ -1,4 +1,5 @@
 import { dev } from '$app/environment';
+import type { PersonalBest, WCAEvent } from './types';
 
 export const BASE_URL = dev ? 'http://localhost:5173' : 'https://pickems.nmckee.org';
 
@@ -88,4 +89,21 @@ export const formatTime = (time: number | null, isMulti = false): string => {
 	}
 
 	return seconds.toFixed(2);
+};
+
+export const getPbTime = (bests: PersonalBest[] | undefined, event: WCAEvent) => {
+	if (['333bf', '444bf', '555bf'].includes(event)) {
+		const singlePb = bests?.find((pb) => pb.eventId == event && pb.type == 'single');
+
+		return singlePb?.best ?? null;
+	}
+
+	if (event == '333mbf') {
+		const multiPb = bests?.find((pb) => pb.eventId == '333mbf');
+		return multiPb?.best ?? null;
+	}
+
+	const averagePb = bests?.find((pb) => pb.eventId == event && pb.type == 'average');
+
+	return averagePb?.best ?? null;
 };

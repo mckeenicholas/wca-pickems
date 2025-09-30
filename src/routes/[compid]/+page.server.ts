@@ -3,6 +3,7 @@ import { Competition, Registration } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import type { PageServerLoad } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
+import { eventOrderIdx } from '$lib/types';
 
 export const load: PageServerLoad = async (event) => {
 	const userId = event.locals.user;
@@ -31,6 +32,8 @@ export const load: PageServerLoad = async (event) => {
 	if (!competitionName.length) {
 		return fail(404, 'Competition not found');
 	}
+
+	competitionEvents.sort((a, b) => eventOrderIdx[a.event] - eventOrderIdx[b.event]);
 
 	return { competitionName: competitionName[0], competitionEvents };
 };

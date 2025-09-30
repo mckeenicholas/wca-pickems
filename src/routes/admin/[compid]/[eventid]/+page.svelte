@@ -127,7 +127,12 @@
 		<!-- Main Content Card -->
 		<div class="mt-2">
 			<!-- Drag Reorder Component -->
-			<DragReorder top8List={results} bankList={competitors} results />
+			<DragReorder
+				top8List={results}
+				bankList={competitors}
+				results
+				multi={page.params.eventid == '333mbf'}
+			/>
 
 			<!-- Status Messages -->
 			{#if saveStatus !== 'idle'}

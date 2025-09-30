@@ -13,10 +13,12 @@
 
 	let loadingStates = $state<Record<string, boolean>>({});
 	let allowEdits = $state(data.competition?.allowEdits ?? false);
+	let visible = $state(data.competition?.isVisible ?? false);
 	let toggleLoading = $state(false);
+	let visibilityToggleLoading = $state(false);
+	let syncLoading = $state(false);
 
 	async function calculateScores(event: string) {
-		// Set loading state for this specific event
 		loadingStates[event] = true;
 
 		try {
@@ -42,7 +44,7 @@
 		toggleLoading = true;
 
 		try {
-			const response = await fetch(`/admin/${compid}`, {
+			const response = await fetch(resolve('/admin/[compid]', { compid }), {
 				method: 'PATCH',
 				headers: {
 					'Content-Type': 'application/json'
@@ -57,6 +59,47 @@
 			console.error('Network error:', error);
 		} finally {
 			toggleLoading = false;
+		}
+	}
+
+	async function toggleVisibility() {
+		visibilityToggleLoading = true;
+
+		try {
+			const response = await fetch(resolve('/admin/[compid]', { compid }), {
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ visible: !visible })
+			});
+
+			if (response.ok) {
+				visible = !visible;
+			}
+		} catch (error) {
+			console.error('Network error:', error);
+		} finally {
+			visibilityToggleLoading = false;
+		}
+	}
+
+	async function syncCompetition() {
+		syncLoading = true;
+
+		try {
+			const response = await fetch(resolve('/admin/[compid]/sync', { compid }), {
+				method: 'POST'
+			});
+
+			if (!response.ok) {
+				const error = await response.json();
+				console.error('Error syncing competition:', error);
+			}
+		} catch (error) {
+			console.error('Network error:', error);
+		} finally {
+			syncLoading = false;
 		}
 	}
 </script>
@@ -87,22 +130,85 @@
 			<div class="border-b border-slate-200 bg-slate-50 px-6 py-4">
 				<h2 class="text-lg font-medium text-slate-900">Competition Settings</h2>
 			</div>
-			<div class="px-6 py-4">
-				<div class="flex items-center justify-between">
-					<div>
-						<h3 class="text-base font-medium text-slate-900">Allow Edits</h3>
-						<p class="text-sm text-slate-600">
-							{allowEdits
-								? 'Participants can currently edit their registrations'
-								: 'Registration editing is currently disabled'}
-						</p>
+			<div class="divide-y divide-slate-200">
+				<!-- Allow Edits Toggle -->
+				<div class="px-6 py-4">
+					<div class="flex items-center justify-between">
+						<div>
+							<h3 class="text-base font-medium text-slate-900">Allow Edits</h3>
+							<p class="text-sm text-slate-600">
+								{allowEdits
+									? 'Participants can currently edit their registrations'
+									: 'Registration editing is currently disabled'}
+							</p>
+						</div>
+						<Toggle
+							disabled={toggleLoading}
+							onclick={toggleAllowEdits}
+							value={allowEdits}
+							id="edit-toggle"
+						/>
 					</div>
-					<Toggle
-						disabled={toggleLoading}
-						onclick={toggleAllowEdits}
-						value={allowEdits}
-						id="edit-toggle"
-					/>
+				</div>
+
+				<!-- Visibility Toggle -->
+				<div class="px-6 py-4">
+					<div class="flex items-center justify-between">
+						<div>
+							<h3 class="text-base font-medium text-slate-900">Competition Visibility</h3>
+							<p class="text-sm text-slate-600">
+								{visible
+									? 'Competition is visible to participants'
+									: 'Competition is hidden from participants'}
+							</p>
+						</div>
+						<Toggle
+							disabled={visibilityToggleLoading}
+							onclick={toggleVisibility}
+							value={visible}
+							id="visibility-toggle"
+						/>
+					</div>
+				</div>
+
+				<!-- Sync Button -->
+				<div class="px-6 py-4">
+					<div class="flex items-center justify-between">
+						<div>
+							<h3 class="text-base font-medium text-slate-900">Sync Competition Data</h3>
+							<p class="text-sm text-slate-600">Update competition data from WCA database</p>
+						</div>
+						<button
+							onclick={syncCompetition}
+							disabled={syncLoading}
+							class="flex items-center space-x-2 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:bg-green-400"
+						>
+							{#if syncLoading}
+								<svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+									<circle
+										class="opacity-25"
+										cx="12"
+										cy="12"
+										r="10"
+										stroke="currentColor"
+										stroke-width="4"
+									></circle>
+									<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+								</svg>
+								<span>Syncing...</span>
+							{:else}
+								<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+									></path>
+								</svg>
+								<span>Sync</span>
+							{/if}
+						</button>
+					</div>
 				</div>
 			</div>
 		</div>

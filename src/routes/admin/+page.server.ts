@@ -1,10 +1,18 @@
 import { db } from '$lib/server/db/index.js';
 import { Competitor, Competition, Registration } from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
-import type { PersonalBest, WCAEvent, WcifData } from '$lib/types';
+import type { WCAEvent, WcifData } from '$lib/types';
 import { isAdmin } from '$lib/server/serverUtils';
+import { getPbTime } from '$lib/util';
+
+class CompetitionAlreadyExistsError extends Error {
+	constructor(message: string) {
+		super(message);
+		this.name = 'CompetitionExistsError';
+	}
+}
 
 export const load: PageServerLoad = async (event) => {
 	const userId = event.locals.user;
@@ -53,26 +61,21 @@ export const actions = {
 		} catch (e: unknown) {
 			console.error('Error loading competition data:', e);
 			let errorMessage = 'An unknown error occurred';
-			if (e instanceof Error) {
+			let errorCode = 500;
+
+			if (e instanceof CompetitionAlreadyExistsError) {
+				errorMessage = e.message;
+				errorCode = 400;
+			} else if (e instanceof Error) {
 				errorMessage = e.message;
 			}
-			return fail(500, { error: errorMessage });
+
+			return fail(errorCode, { error: errorMessage });
 		}
 
 		return { success: true };
 	}
 } satisfies Actions;
-
-const getPbTime = (bests: PersonalBest[] | undefined, event: WCAEvent) => {
-	if (event == '333mbf') {
-		const multiPb = bests?.find((pb) => pb.eventId === '333mbf');
-		return multiPb?.best ?? null;
-	}
-
-	const averagePb = bests?.find((pb) => pb.eventId === event && pb.type === 'average');
-
-	return averagePb?.best ?? null;
-};
 
 const loadCompetitionData = async (id: string) => {
 	const wcifResponse = await fetch(
@@ -88,12 +91,15 @@ const loadCompetitionData = async (id: string) => {
 		.from(Competition)
 		.where(eq(Competition.competitionId, id))
 		.limit(1);
-	let competitionRecordId: number;
 
 	if (existingCompetition.length > 0) {
-		competitionRecordId = existingCompetition[0].id;
-	} else {
-		const newCompetition = await db
+		throw new CompetitionAlreadyExistsError(
+			`Competition with id: ${id} already exist, use 'sync' to update instead`
+		);
+	}
+
+	await db.transaction(async (tx) => {
+		const newCompetition = await tx
 			.insert(Competition)
 			.values({
 				competitionId: wcifData.id,
@@ -101,46 +107,54 @@ const loadCompetitionData = async (id: string) => {
 				startDate: wcifData.schedule.startDate
 			})
 			.returning({ id: Competition.id });
-		competitionRecordId = newCompetition[0].id;
-	}
+		const competitionRecordId = newCompetition[0].id;
 
-	const competitorsToInsert = wcifData.persons
-		.filter(
-			(person) => person.registration?.isCompeting && person.registration.status == 'accepted'
-		)
-		.map((person) => ({
-			wcaUserId: person.wcaUserId,
-			wcaId: person.wcaId,
-			name: person.name
-		}));
+		const competitorsToInsert = wcifData.persons
+			.filter(
+				(person) => person.registration?.isCompeting && person.registration.status == 'accepted'
+			)
+			.map((person) => ({
+				wcaUserId: person.wcaUserId,
+				wcaId: person.wcaId,
+				name: person.name
+			}));
 
-	if (competitorsToInsert.length > 0) {
-		await db.insert(Competitor).values(competitorsToInsert).onConflictDoNothing();
-	}
-
-	await db.delete(Registration).where(eq(Registration.competitionId, competitionRecordId));
-
-	const registrationsToInsert = [];
-	for (const person of wcifData.persons) {
-		if (
-			person.registration?.eventIds &&
-			person.registration.eventIds.length > 0 &&
-			person.wcaUserId
-		) {
-			for (const eventId of person.registration.eventIds) {
-				const seedTime = getPbTime(person.personalBests, eventId as WCAEvent);
-
-				registrationsToInsert.push({
-					competitorId: person.wcaUserId,
-					competitionId: competitionRecordId,
-					event: eventId as WCAEvent,
-					seedTime: seedTime
+		if (competitorsToInsert.length > 0) {
+			await tx
+				.insert(Competitor)
+				.values(competitorsToInsert)
+				.onConflictDoUpdate({
+					target: [Competitor.wcaUserId],
+					set: {
+						wcaId: sql.raw(
+							`COALESCE(excluded.${Competitor.wcaId.name}, competitors.${Competitor.wcaId.name})`
+						)
+					}
 				});
+		}
+
+		const registrationsToInsert = [];
+		for (const person of wcifData.persons) {
+			if (
+				person.registration?.eventIds &&
+				person.registration.eventIds.length > 0 &&
+				person.wcaUserId
+			) {
+				for (const eventId of person.registration.eventIds) {
+					const seedTime = getPbTime(person.personalBests, eventId as WCAEvent);
+
+					registrationsToInsert.push({
+						competitorId: person.wcaUserId,
+						competitionId: competitionRecordId,
+						event: eventId as WCAEvent,
+						seedTime: seedTime
+					});
+				}
 			}
 		}
-	}
 
-	if (registrationsToInsert.length > 0) {
-		await db.insert(Registration).values(registrationsToInsert);
-	}
+		if (registrationsToInsert.length > 0) {
+			await tx.insert(Registration).values(registrationsToInsert);
+		}
+	});
 };

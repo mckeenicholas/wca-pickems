@@ -2,42 +2,8 @@
 	import { enhance } from '$app/forms';
 	import type { PageServerData } from './$types';
 	import { resolve } from '$app/paths';
-	import Toggle from '$lib/components/Toggle.svelte';
-	import { invalidateAll } from '$app/navigation';
 
 	let { data }: { data: PageServerData } = $props();
-
-	let competitionVisible = $derived(data.availableCompetitions.map((c) => c.visible));
-	let visibleLoading = $derived(Array.from({ length: competitionVisible.length }, () => false));
-
-	const toggleVisibility = async (event: MouseEvent, listIdx: number) => {
-		event.preventDefault();
-
-		const newValue = !competitionVisible[listIdx];
-		visibleLoading[listIdx] = true;
-
-		const compid = data.availableCompetitions[listIdx].competitionId;
-
-		try {
-			const response = await fetch(`/admin/${compid}`, {
-				method: 'PATCH',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({ visible: newValue })
-			});
-
-			if (response.ok) {
-				competitionVisible[listIdx] = newValue;
-			}
-		} catch (error) {
-			console.error('Network error:', error);
-		} finally {
-			visibleLoading[listIdx] = false;
-		}
-
-		invalidateAll();
-	};
 </script>
 
 <div class="min-h-screen bg-gray-50">
@@ -122,7 +88,7 @@
 				</div>
 
 				<div class="divide-y divide-gray-100">
-					{#each data.availableCompetitions as competition, index (competition.competitionId)}
+					{#each data.availableCompetitions as competition (competition.competitionId)}
 						<div class="group px-6 py-4 transition-colors duration-150 hover:bg-gray-50">
 							<a
 								href={resolve('/admin/[compid]', { compid: competition.competitionId })}
@@ -148,16 +114,6 @@
 											</p>
 										</div>
 									</div>
-								</div>
-
-								<div class="flex space-x-2">
-									<label for="visibility-{competition.competitionId}"> Toggle Visibility </label>
-									<Toggle
-										disabled={visibleLoading[index]}
-										value={competitionVisible[index]}
-										onclick={(e) => toggleVisibility(e, index)}
-										id="visibility-{competition.competitionId}"
-									/>
 								</div>
 
 								<div class="text-gray-400 transition-colors duration-150 group-hover:text-blue-600">

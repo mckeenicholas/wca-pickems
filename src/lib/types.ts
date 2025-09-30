@@ -38,6 +38,26 @@ export const eventNames = {
 	'333mbf': '3x3x3 Multi-Blind'
 } as const;
 
+export const eventOrderIdx: Record<WCAEvent, number> = {
+	'333': 0,
+	'222': 1,
+	'444': 2,
+	'555': 3,
+	'666': 4,
+	'777': 5,
+	'333bf': 6,
+	'333fm': 7,
+	'333oh': 8,
+	clock: 9,
+	minx: 10,
+	pyram: 11,
+	skewb: 12,
+	sq1: 13,
+	'444bf': 14,
+	'555bf': 15,
+	'333mbf': 16
+} as const;
+
 export type WCAEvent = (typeof WCAEvents)[number];
 
 export interface WCAOauthResponse {

@@ -81,10 +81,7 @@ export type Person = {
 		status: string;
 		isCompeting: boolean;
 	} | null;
-	avatar: {
-		url: string;
-		thumbUrl: string;
-	} | null;
+	personalBests: PersonalBest[];
 };
 
 export type PersonalBest = {

@@ -40,3 +40,52 @@ export const formatDate = (dateString: string) => {
 		year: 'numeric'
 	});
 };
+
+const formatMulti = (result: number) => {
+	const missed = result % 100;
+	const T_seconds = Math.floor(result / 100) % 100000;
+	const DD = Math.floor(result / 10000000) % 100;
+
+	const difference = 99 - DD;
+	const solved = difference + missed;
+	const attempted = solved + missed;
+
+	let timeStr: string;
+
+	if (T_seconds === 99999) {
+		timeStr = 'DNF';
+	} else {
+		const timeInCentiseconds = T_seconds * 100;
+		const seconds = timeInCentiseconds / 100;
+
+		if (seconds >= 60) {
+			const minutes = Math.floor(seconds / 60);
+			const remainingSeconds = (seconds % 60).toFixed(2);
+			timeStr = `${minutes}:${remainingSeconds.padStart(5, '0')}`;
+		} else {
+			timeStr = seconds.toFixed(2);
+		}
+	}
+
+	return `${solved}/${attempted} ${timeStr}`;
+};
+
+export const formatTime = (time: number | null, isMulti = false): string => {
+	if (!time || time <= 0) {
+		return '';
+	}
+
+	if (isMulti) {
+		return formatMulti(time);
+	}
+
+	const seconds = time / 100;
+
+	if (seconds >= 60) {
+		const minutes = Math.floor(seconds / 60);
+		const remainingSeconds = (seconds % 60).toFixed(2);
+		return `${minutes}:${remainingSeconds.padStart(5, '0')}`;
+	}
+
+	return seconds.toFixed(2);
+};

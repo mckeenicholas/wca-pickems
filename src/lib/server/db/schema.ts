@@ -75,7 +75,8 @@ export const Registration = pgTable(
 		competitionId: integer()
 			.notNull()
 			.references(() => Competition.id, { onDelete: 'cascade' }),
-		event: EventEnum().notNull()
+		event: EventEnum().notNull(),
+		seedTime: integer()
 	},
 	(table) => [index('registration_competitionId_idx').on(table.competitionId)]
 );

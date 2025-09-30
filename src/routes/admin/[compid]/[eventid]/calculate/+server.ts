@@ -3,7 +3,7 @@ import { Competition, Prediction, Registration, Result } from '$lib/server/db/sc
 import { WCAEvents, type WCAEvent } from '$lib/types.js';
 import { MAX_PICKS } from '$lib/util';
 import { json } from '@sveltejs/kit';
-import { and, eq, count, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 
 const DECAY_FACTOR = 1.5;
 

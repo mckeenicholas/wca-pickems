@@ -24,8 +24,6 @@ export const load: PageServerLoad = async (event) => {
 		.groupBy(Competition.competitionId, Competition.competitionName, Competition.startDate)
 		.orderBy(Competition.startDate);
 
-	console.log(competitions);
-
 	return { competitions };
 };
 

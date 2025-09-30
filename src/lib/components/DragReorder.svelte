@@ -1,16 +1,18 @@
 <script lang="ts">
-	import { MAX_PICKS } from '$lib/util';
+	import { formatTime, MAX_PICKS } from '$lib/util';
 
 	let {
 		top8List = $bindable(),
 		bankList = $bindable(),
 		freeze = false,
-		results = false
+		results = false,
+		multi = false
 	}: {
-		top8List: { name: string }[];
-		bankList: { name: string }[];
+		top8List: { name: string; seedTime: number | null }[];
+		bankList: { name: string; seedTime: number | null }[];
 		freeze?: boolean;
 		results?: boolean;
+		multi?: boolean;
 	} = $props();
 
 	let searchTerm = $state('');
@@ -99,12 +101,17 @@
 	function handleDragEnd(): void {
 		resetDragState();
 	}
+
+	$effect(() => {
+		bankList.sort(
+			(a, b) => (a.seedTime ?? Number.MAX_SAFE_INTEGER) - (b.seedTime ?? Number.MAX_SAFE_INTEGER)
+		);
+	});
 </script>
 
 <div class="container">
-	<div class="column">
+	<div class="column competitor-column">
 		<h2 class="title-competitors">Competitors</h2>
-
 		<input
 			type="search"
 			id="competitor-search"
@@ -112,9 +119,8 @@
 			placeholder="Search competitors..."
 			class="search-input"
 		/>
-
 		<div
-			class="list-container"
+			class="list-container bank-list-container"
 			class:drag-over={!freeze && dragOverList === 'bank'}
 			ondragover={(e) => handleDragOverContainer(e, 'bank')}
 			ondrop={(e) => handleDrop(e, 'bank', null)}
@@ -142,7 +148,14 @@
 						aria-selected="false"
 						tabindex="0"
 					>
-						<span class="name">{item.name}</span>
+						<span class="name"
+							>{item.name}
+							{#if item.seedTime}
+								- <span class="time">
+									{formatTime(item.seedTime, multi)}
+								</span>
+							{/if}</span
+						>
 					</div>
 					{#if !freeze && overIndex === index && dragOverList === 'bank' && isDraggingAfter}
 						<div class="drop-indicator"></div>
@@ -151,7 +164,6 @@
 			{/each}
 		</div>
 	</div>
-
 	<div class="column">
 		<h2 class="title-predictions">{results ? 'Results' : 'Predictions'}</h2>
 		<div
@@ -185,7 +197,14 @@
 					tabindex="0"
 				>
 					<span class="rank">{index + 1}.</span>
-					<span class="name">{item.name}</span>
+					<span class="name"
+						>{item.name}
+						{#if item.seedTime}
+							- <span class="time">
+								{formatTime(item.seedTime, multi)}
+							</span>
+						{/if}</span
+					>
 				</div>
 				{#if !freeze && overIndex === index && dragOverList === 'top8' && isDraggingAfter}
 					<div class="drop-indicator"></div>
@@ -209,6 +228,8 @@
 
 	.column {
 		flex: 1;
+		display: flex;
+		flex-direction: column;
 	}
 
 	.title-competitors {
@@ -221,7 +242,7 @@
 	.title-predictions {
 		font-size: 1.25rem;
 		font-weight: 600;
-		margin-bottom: 74px;
+		margin-bottom: 1rem;
 		color: #374151;
 	}
 
@@ -233,6 +254,7 @@
 		margin-bottom: 1rem;
 		font-size: 1rem;
 		box-sizing: border-box;
+		flex-shrink: 0;
 	}
 	.search-input:focus {
 		outline: none;
@@ -252,6 +274,15 @@
 		transition:
 			background-color 0.2s,
 			border-color 0.2s;
+		flex-grow: 1;
+	}
+
+	.bank-list-container {
+		min-height: auto;
+	}
+
+	.column:last-child .list-container {
+		min-height: 75vh;
 	}
 
 	.list-container.drag-over {
@@ -314,5 +345,10 @@
 		border-radius: 2px;
 		margin-top: -6px;
 		margin-bottom: -6px;
+	}
+
+	.time {
+		font-family: monospace;
+		font-size: large;
 	}
 </style>

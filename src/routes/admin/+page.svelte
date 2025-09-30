@@ -7,8 +7,8 @@
 
 	let { data }: { data: PageServerData } = $props();
 
-	let competitionVisible = $state(data.availableCompetitions.map((c) => c.visible));
-	let visibleLoading = $state(Array.from({ length: competitionVisible.length }, () => false));
+	let competitionVisible = $derived(data.availableCompetitions.map((c) => c.visible));
+	let visibleLoading = $derived(Array.from({ length: competitionVisible.length }, () => false));
 
 	const toggleVisibility = async (event: MouseEvent, listIdx: number) => {
 		event.preventDefault();

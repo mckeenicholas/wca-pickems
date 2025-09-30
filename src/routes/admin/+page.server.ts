@@ -3,7 +3,7 @@ import { Competitor, Competition, Registration } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
-import type { WCAEvent, WcifData } from '$lib/types';
+import type { PersonalBest, WCAEvent, WcifData } from '$lib/types';
 import { isAdmin } from '$lib/server/serverUtils';
 
 export const load: PageServerLoad = async (event) => {
@@ -63,9 +63,18 @@ export const actions = {
 	}
 } satisfies Actions;
 
+const getPbTime = (bests: PersonalBest[] | undefined, event: WCAEvent) => {
+	if (event == '333mbf') {
+		const multiPb = bests?.find((pb) => pb.eventId === '333mbf');
+		return multiPb?.best ?? null;
+	}
+
+	const averagePb = bests?.find((pb) => pb.eventId === event && pb.type === 'average');
+
+	return averagePb?.best ?? null;
+};
+
 const loadCompetitionData = async (id: string) => {
-	// TODO: RESET FROM STAGING
-	// const wcifResponse = await fetch(`${WCA_URL}/api/v0/competitions/${id}/wcif/public`);
 	const wcifResponse = await fetch(
 		`https://www.worldcubeassociation.org/api/v0/competitions/${id}/wcif/public`
 	);
@@ -119,10 +128,13 @@ const loadCompetitionData = async (id: string) => {
 			person.wcaUserId
 		) {
 			for (const eventId of person.registration.eventIds) {
+				const seedTime = getPbTime(person.personalBests, eventId as WCAEvent);
+
 				registrationsToInsert.push({
 					competitorId: person.wcaUserId,
 					competitionId: competitionRecordId,
-					event: eventId as WCAEvent
+					event: eventId as WCAEvent,
+					seedTime: seedTime
 				});
 			}
 		}

@@ -142,7 +142,12 @@
 		<!-- Main Content Card -->
 		<div class="mt-2">
 			<!-- Drag Reorder Component -->
-			<DragReorder top8List={predictions} bankList={competitors} freeze={!data.comp.allowEdits} />
+			<DragReorder
+				top8List={predictions}
+				bankList={competitors}
+				freeze={!data.comp.allowEdits}
+				multi={page.params.eventid == '333mbf'}
+			/>
 
 			<!-- Status Messages -->
 			{#if saveStatus !== 'idle'}

@@ -2,7 +2,7 @@ import { db } from '$lib/server/db';
 import { Competition, Competitor, Prediction, Registration, Result } from '$lib/server/db/schema';
 import type { WCAEvent } from '$lib/types';
 import { fail } from '@sveltejs/kit';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import type { PageServerLoad } from './$types';
 
 type PredictionType = { name: string; placement: number; score: number; actual: number };
@@ -19,6 +19,19 @@ export const load: PageServerLoad = async (event) => {
 		return fail(400, { error: 'Invalid user ID' });
 	}
 
+	const eventsWithResults = await db
+		.selectDistinct({ event: Registration.event })
+		.from(Result)
+		.innerJoin(Registration, eq(Result.registrationId, Registration.id))
+		.innerJoin(Competition, eq(Registration.competitionId, Competition.id))
+		.where(eq(Competition.competitionId, compId));
+
+	const eventsList = eventsWithResults.map((r) => r.event);
+
+	if (eventsList.length === 0) {
+		return { predictions: [], compName: '' };
+	}
+
 	const results = await db
 		.select({
 			name: Competitor.name,
@@ -33,7 +46,13 @@ export const load: PageServerLoad = async (event) => {
 		.innerJoin(Competition, eq(Registration.competitionId, Competition.id))
 		.innerJoin(Competitor, eq(Registration.competitorId, Competitor.wcaUserId))
 		.leftJoin(Result, eq(Result.registrationId, Registration.id))
-		.where(and(eq(Competition.competitionId, compId), eq(Prediction.userId, userId)));
+		.where(
+			and(
+				eq(Competition.competitionId, compId),
+				eq(Prediction.userId, userId),
+				inArray(Registration.event, eventsList)
+			)
+		);
 
 	const [{ competition }] = results;
 

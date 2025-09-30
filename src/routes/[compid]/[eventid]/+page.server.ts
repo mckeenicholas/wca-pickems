@@ -33,7 +33,8 @@ export const load: PageServerLoad = async (event) => {
 				wcaUserId: Competitor.wcaUserId,
 				wcaId: Competitor.wcaId,
 				name: Competitor.name,
-				registrationId: Registration.id
+				registrationId: Registration.id,
+				seedTime: Registration.seedTime
 			})
 			.from(Registration)
 			.innerJoin(Competition, eq(Registration.competitionId, Competition.id))
@@ -41,7 +42,7 @@ export const load: PageServerLoad = async (event) => {
 			.where(
 				and(eq(Competition.competitionId, compid), eq(Registration.event, eventid as WCAEvent))
 			)
-			.orderBy(Competitor.name),
+			.orderBy(Registration.seedTime, Competitor.name),
 
 		// get user predictions
 		db
@@ -50,7 +51,8 @@ export const load: PageServerLoad = async (event) => {
 				wcaId: Competitor.wcaId,
 				name: Competitor.name,
 				placement: Prediction.placement,
-				registrationId: Registration.id
+				registrationId: Registration.id,
+				seedTime: Registration.seedTime
 			})
 			.from(Prediction)
 			.innerJoin(Registration, eq(Prediction.registrationId, Registration.id))

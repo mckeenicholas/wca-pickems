@@ -148,14 +148,14 @@
 						aria-selected="false"
 						tabindex="0"
 					>
-						<span class="name"
-							>{item.name}
+						<span class="name">
+							<span class="competitor-text">{item.name}</span>
 							{#if item.seedTime}
-								- <span class="time">
+								<span class="time">
 									{formatTime(item.seedTime, multi)}
 								</span>
-							{/if}</span
-						>
+							{/if}
+						</span>
 					</div>
 					{#if !freeze && overIndex === index && dragOverList === 'bank' && isDraggingAfter}
 						<div class="drop-indicator"></div>
@@ -197,14 +197,14 @@
 					tabindex="0"
 				>
 					<span class="rank">{index + 1}.</span>
-					<span class="name"
-						>{item.name}
+					<span class="name">
+						<span class="competitor-text">{item.name}</span>
 						{#if item.seedTime}
-							- <span class="time">
+							<span class="time">
 								{formatTime(item.seedTime, multi)}
 							</span>
-						{/if}</span
-					>
+						{/if}
+					</span>
 				</div>
 				{#if !freeze && overIndex === index && dragOverList === 'top8' && isDraggingAfter}
 					<div class="drop-indicator"></div>
@@ -333,10 +333,26 @@
 	.rank {
 		font-weight: 600;
 		color: #1f2937;
+		margin-right: 0.5rem;
 	}
 
 	.name {
+		display: flex;
+		flex-grow: 1;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	.competitor-text {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+
 		margin-left: 0.5rem;
+	}
+
+	.card:first-child .name .competitor-text {
+		margin-left: 0;
 	}
 
 	.drop-indicator {
@@ -350,5 +366,9 @@
 	.time {
 		font-family: monospace;
 		font-size: large;
+
+		margin-left: auto;
+		padding-left: 0.5rem;
+		flex-shrink: 0;
 	}
 </style>

@@ -8,12 +8,11 @@
 
 	const { data }: PageProps = $props();
 
-	let currentPage = $state(data.currentPage);
-
-	let totalUsers = $state(data.total[0].count);
-	let totalPages = $state(Math.ceil(totalUsers / PAGINATION_SIZE));
-	let hasMorePages = $state(currentPage + 1 < totalPages);
-	let isFirstPage = $state(currentPage === 0);
+	let currentPage = $derived(data.currentPage);
+	let totalUsers = $derived(data.total[0].count);
+	let totalPages = $derived(Math.ceil(totalUsers / PAGINATION_SIZE));
+	let hasMorePages = $derived(currentPage + 1 < totalPages);
+	let isFirstPage = $derived(currentPage === 0);
 
 	const nextPage = () => {
 		const url = new URL(page.url);

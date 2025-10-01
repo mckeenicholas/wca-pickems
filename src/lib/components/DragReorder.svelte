@@ -174,9 +174,10 @@
 			role="listbox"
 			tabindex="0"
 		>
-			{#if top8List.length === 0}
+			{#if top8List.length === 0 && !freeze}
 				<div class="placeholder">
 					Place {results ? 'results' : 'predictions'} here in order (max {MAX_PICKS})
+					<p class="mt-2">On mobile, long-hold to drag items</p>
 				</div>
 			{/if}
 			{#each top8List as item, index (item.name)}

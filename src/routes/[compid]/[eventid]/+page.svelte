@@ -279,6 +279,9 @@
 					<li>Click the "Save Predictions" button to submit your final ranking.</li>
 				</ol>
 				<p class="text-sm text-slate-500">
+					On mobile devices, long-press on a competitor to drag them.
+				</p>
+				<p class="text-sm text-slate-500">
 					Your predictions will be scored based on how accurately your predictions match the top {MAX_PICKS}
 					placements.
 				</p>

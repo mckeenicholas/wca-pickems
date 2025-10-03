@@ -19,17 +19,28 @@ export const load: PageServerLoad = async (event) => {
 		return fail(400, { error: 'Invalid user ID' });
 	}
 
+	const nameQuery = await db
+		.select({ name: Competition.competitionName })
+		.from(Competition)
+		.where(eq(Competition.competitionId, compId));
+
+	if (nameQuery.length == 0) {
+		return fail(404, { error: `Competition with id ${compId} does not exist` });
+	}
+
+	const compName = nameQuery[0].name;
+
 	const eventsWithResults = await db
 		.selectDistinct({ event: Registration.event })
 		.from(Result)
 		.innerJoin(Registration, eq(Result.registrationId, Registration.id))
 		.innerJoin(Competition, eq(Registration.competitionId, Competition.id))
-		.where(eq(Competition.competitionId, compId));
+		.where(and(eq(Competition.competitionId, compId)));
 
-	const eventsList = eventsWithResults.map((r) => r.event);
+	const userEventsList = eventsWithResults.map((r) => r.event);
 
-	if (eventsList.length === 0) {
-		return { predictions: [], compName: '' };
+	if (userEventsList.length === 0) {
+		return { predictions: [], compName };
 	}
 
 	const results = await db
@@ -50,11 +61,9 @@ export const load: PageServerLoad = async (event) => {
 			and(
 				eq(Competition.competitionId, compId),
 				eq(Prediction.userId, userId),
-				inArray(Registration.event, eventsList)
+				inArray(Registration.event, userEventsList)
 			)
 		);
-
-	const [{ competition }] = results;
 
 	const predictionsByEventMap = results.reduce((acc, result) => {
 		const predictions = acc.get(result.event) ?? [];
@@ -75,5 +84,5 @@ export const load: PageServerLoad = async (event) => {
 		})
 	);
 
-	return { predictions: predictionsByEvent, compName: competition };
+	return { predictions: predictionsByEvent, compName: compName };
 };

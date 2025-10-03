@@ -1,6 +1,6 @@
 <script lang="ts">
 	import EventSelector from '$lib/components/EventSelector.svelte';
-	import { eventNames, type WCAEvent } from '$lib/types';
+	import { eventNames, eventOrderIdx, type WCAEvent } from '$lib/types';
 	import type { PageProps } from './$types';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
@@ -64,7 +64,7 @@
 
 	<EventSelector
 		bind:event={() => selectedEvent, (event) => handleEventChange(event)}
-		eventOptions={data.events}
+		eventOptions={data.events?.sort((a, b) => eventOrderIdx[a] - eventOrderIdx[b])}
 	/>
 
 	{#if userIsLoggedIn}

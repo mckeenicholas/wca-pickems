@@ -47,6 +47,7 @@ export const load: PageServerLoad = async (event) => {
 		const event = prediction.event;
 
 		if (!acc[event]) acc[event] = [];
+
 		acc[event].push({
 			competitorName: prediction.competitorName,
 			place: prediction.place,

@@ -22,7 +22,8 @@ export const load: PageServerLoad = async (event) => {
 		.innerJoin(Prediction, eq(Prediction.userId, Users.id))
 		.innerJoin(Registration, eq(Prediction.registrationId, Registration.id))
 		.innerJoin(Competition, eq(Registration.competitionId, Competition.id))
-		.where(eq(Competition.competitionId, compId));
+		.where(eq(Competition.competitionId, compId))
+		.orderBy(Users.id);
 
 	return { users: userQuery };
 };

@@ -2,12 +2,18 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import BackButton from '$lib/components/BackButton.svelte';
-	import { eventNames, type WCAEvent } from '$lib/types';
+	import { eventNames, eventOrderIdx, type WCAEvent } from '$lib/types';
 	import type { PageProps } from './$types';
 
 	const { data }: PageProps = $props();
 
 	const compid = page.params.compid!;
+
+	const personEntires = $derived(
+		Object.entries(data.predictions).sort(
+			(a, b) => eventOrderIdx[a[0] as WCAEvent] - eventOrderIdx[b[0] as WCAEvent]
+		)
+	);
 </script>
 
 <BackButton to={resolve('/admin/[compid]/users', { compid })} />
@@ -19,7 +25,7 @@
 	{/if}
 
 	{#if Object.keys(data.predictions).length > 0}
-		{#each Object.entries(data.predictions) as [event, predictionsForEvent] (event)}
+		{#each personEntires as [event, predictionsForEvent] (event)}
 			<section class="mb-8 rounded-lg bg-gray-100 p-4 shadow-sm">
 				<h2 class="mb-4 text-2xl font-semibold capitalize">{eventNames[event as WCAEvent]}</h2>
 				<ul class="space-y-2">

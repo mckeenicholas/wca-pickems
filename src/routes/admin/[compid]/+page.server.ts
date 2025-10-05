@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db';
-import { Competition, Registration } from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { Competition, Registration, Result } from '$lib/server/db/schema';
+import { eq, count } from 'drizzle-orm';
 import type { PageServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
 import { isAdmin } from '$lib/server/serverUtils';
@@ -21,10 +21,12 @@ export const load: PageServerLoad = async (event) => {
 	const [competitionEvents, competition] = await Promise.all([
 		// Get all events at this competition
 		db
-			.selectDistinct({ event: Registration.event })
+			.select({ event: Registration.event, numResults: count(Result.id) })
 			.from(Registration)
 			.innerJoin(Competition, eq(Registration.competitionId, Competition.id))
-			.where(eq(Competition.competitionId, compId)),
+			.leftJoin(Result, eq(Result.registrationId, Registration.id))
+			.where(eq(Competition.competitionId, compId))
+			.groupBy(Registration.event),
 
 		// Get competition info
 		db

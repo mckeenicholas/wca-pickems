@@ -11,34 +11,11 @@
 
 	const compid = page.params.compid!;
 
-	let loadingStates = $state<Record<string, boolean>>({});
 	let allowEdits = $state(data.competition?.allowEdits ?? false);
 	let visible = $state(data.competition?.isVisible ?? false);
 	let toggleLoading = $state(false);
 	let visibilityToggleLoading = $state(false);
 	let syncLoading = $state(false);
-
-	async function calculateScores(event: string) {
-		loadingStates[event] = true;
-
-		try {
-			const response = await fetch(
-				resolve('/admin/[compid]/[eventid]/calculate', { compid, eventid: event }),
-				{
-					method: 'POST'
-				}
-			);
-
-			if (!response.ok) {
-				const error = await response.json();
-				console.error('Error calculating scores:', error);
-			}
-		} catch (error) {
-			console.error('Network error:', error);
-		} finally {
-			loadingStates[event] = false;
-		}
-	}
 
 	async function toggleAllowEdits() {
 		toggleLoading = true;
@@ -243,42 +220,11 @@
 							<!-- Right side - Calculate button and arrow -->
 							<div class="flex items-center space-x-3">
 								<!-- Calculate Scores Button -->
-								<button
-									onclick={(e) => {
-										e.preventDefault();
-										calculateScores(event.event);
-									}}
-									disabled={loadingStates[event.event]}
-									class="flex items-center space-x-2 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition-colors duration-200 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:bg-blue-400"
-								>
-									{#if loadingStates[event.event]}
-										<!-- Loading spinner -->
-										<svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-											<circle
-												class="opacity-25"
-												cx="12"
-												cy="12"
-												r="10"
-												stroke="currentColor"
-												stroke-width="4"
-											></circle>
-											<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"
-											></path>
-										</svg>
-										<span>Calculating...</span>
-									{:else}
-										<!-- Calculator icon -->
-										<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												stroke-width="2"
-												d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-											></path>
-										</svg>
-										<span>Calculate</span>
-									{/if}
-								</button>
+								<div>
+									{event.numResults == 1
+										? '1 result entered'
+										: `${event.numResults} results entered`}
+								</div>
 
 								<!-- Arrow -->
 								<svg

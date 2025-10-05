@@ -1,15 +1,17 @@
 import { db } from '$lib/server/db';
-import { Competition, Registration, Result } from '$lib/server/db/schema';
+import { Competition, Prediction, Registration, Result } from '$lib/server/db/schema';
 import { WCAEvents, type WCAEvent } from '$lib/types';
 import { MAX_PICKS } from '$lib/util';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { eq, and, count } from 'drizzle-orm';
-import { exists } from 'drizzle-orm/sql';
+import { exists, sql } from 'drizzle-orm/sql';
 
 interface IResult {
 	registrationId: number;
 	placement: number;
 }
+
+const DECAY_FACTOR = 1.5;
 
 export const POST: RequestHandler = async ({ request, params, locals }) => {
 	try {
@@ -65,6 +67,24 @@ export const POST: RequestHandler = async ({ request, params, locals }) => {
 					}))
 				);
 			}
+
+			await tx
+				.update(Prediction)
+				.set({
+					score: sql`(
+    ${MAX_PICKS} - ${Prediction.placement} + 1
+)::float / POWER(${DECAY_FACTOR}, ABS(${Prediction.placement} - ${Result.placement}))`
+				})
+				.from(Registration)
+				.innerJoin(Competition, eq(Registration.competitionId, Competition.id))
+				.innerJoin(Result, eq(Result.registrationId, Registration.id))
+				.where(
+					and(
+						eq(Prediction.registrationId, Registration.id),
+						eq(Competition.competitionId, compid),
+						eq(Registration.event, eventid as WCAEvent)
+					)
+				);
 		});
 
 		return json({ success: true, message: 'Results saved successfully' });

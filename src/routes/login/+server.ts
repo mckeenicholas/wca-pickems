@@ -47,9 +47,9 @@ export async function POST(event) {
 
 	const userInfo: WCAUserResponseInfo = await userInfoResponse.json();
 
-	const { name, id, wca_id: wcaId } = userInfo.me;
+	const { name, id: wcaUserId, wca_id: wcaId } = userInfo.me;
 
-	const existingUser = await db.select().from(Users).where(eq(Users.wcaId, wcaId)).limit(1);
+	const existingUser = await db.select().from(Users).where(eq(Users.wcaUserId, wcaUserId)).limit(1);
 
 	let userId: number;
 
@@ -58,8 +58,8 @@ export async function POST(event) {
 			.insert(Users)
 			.values({
 				name,
-				wcaUserId: id,
-				wcaId: wcaId
+				wcaUserId,
+				wcaId
 			})
 			.returning({ id: Users.id });
 
